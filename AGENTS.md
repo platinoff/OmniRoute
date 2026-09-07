@@ -8,7 +8,7 @@ CLI (`bin/`), and tests (`tests/`).
 
 ## Setup and focused checks
 
-- Runtime: Node.js `>=22.22.3 <23` or `>=24.0.0 <27`; npm 10+.
+- Runtime: Node.js `>=22.22.2 <23` or `>=24.0.0 <27`; npm 10+.
 - Install dependencies: `npm install`.
 - Start development: `npm run dev`.
 - Build: `npm run build`; release build: `npm run build:release`.
