@@ -1,5 +1,13 @@
 # OmniRoute agent guide
 
+## Environment (GSV hub — read first)
+
+This tree is a **portable plugin** of the rust-folder environment (`S:/rust`).
+**Global rules first:** `S:/rust/GSV/AGENTS.md` · `S:/rust/GSV/docs/gsv/GSV_AGI_PATH.md`.
+Open `S:/rust/GSV/gsv.code-workspace` (GSV first) so hub MCP, tickets, bands, and sprints stay wired. Do **not** copy the VDT kit here. Do **not** install User-scope Cursor MCP. OmniRoute `:20128` stays **policy-down** (probe only; do not start from `agi`).
+
+When a multi-agent workflow pattern is more relevant in PoolAI than here, copy the **idea** from `S:/rust/poolAI` — not PoolAI product files.
+
 ## Project
 
 OmniRoute is a unified AI proxy/router. The repository contains the Next.js application
@@ -8,7 +16,7 @@ CLI (`bin/`), and tests (`tests/`).
 
 ## Setup and focused checks
 
-- Runtime: Node.js `>=22.22.3 <23` or `>=24.0.0 <27`; npm 10+.
+- Runtime: Node.js `>=22.22.2 <23` or `>=24.0.0 <27`; npm 10+.
 - Install dependencies: `npm install`.
 - Start development: `npm run dev`.
 - Build: `npm run build`; release build: `npm run build:release`.
