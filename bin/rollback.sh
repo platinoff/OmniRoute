@@ -40,7 +40,7 @@ done
 
 if [ -z "$METHOD" ]; then
   if command -v docker >/dev/null 2>&1 && [ -f "$REPO_ROOT/docker-compose.prod.yml" ] \
-    && docker compose -f "$REPO_ROOT/docker-compose.prod.yml" ps -q 2>/dev/null | grep -q .; then
+    && docker compose -f "$REPO_ROOT/docker-compose.prod.yml" ps -q 2>/dev/null | rg -q '.'; then
     METHOD="docker"
   elif command -v npm >/dev/null 2>&1; then
     METHOD="npm"
@@ -81,7 +81,7 @@ case "$METHOD" in
   npm)
     ops_require_cmd npm
     npm install -g "omniroute@$VERSION"
-    if command -v pm2 >/dev/null 2>&1 && pm2 jlist 2>/dev/null | grep -q '"name":"omniroute"'; then
+    if command -v pm2 >/dev/null 2>&1 && pm2 jlist 2>/dev/null | rg -q '"name":"omniroute"'; then
       pm2 restart omniroute --update-env
       ops_log "pm2 restarted omniroute"
     else

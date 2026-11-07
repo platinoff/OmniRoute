@@ -15,7 +15,7 @@ cleanup() {
 trap cleanup EXIT
 
 # Inject test entries (idempotent — duplicates are harmless).
-if ! grep -q "$TEST_HOST" "$HOSTS_FILE" 2>/dev/null; then
+if ! rg -q "$TEST_HOST" "$HOSTS_FILE" 2>/dev/null; then
   echo "127.0.0.1 $TEST_HOST" | sudo tee -a "$HOSTS_FILE" > /dev/null
   echo "::1 $TEST_HOST"       | sudo tee -a "$HOSTS_FILE" > /dev/null
 fi

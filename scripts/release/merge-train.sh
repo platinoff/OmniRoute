@@ -164,7 +164,7 @@ if [ "$FAST" = "1" ]; then
   # node:test files changed by the boarded PRs (tests/unit/**/*.test.{ts,mjs};
   # tests/unit/ui/*.test.tsx belongs to the vitest-ui runner, not node:test).
   mapfile -t CHANGED < <(git -C "$WT" diff --name-only "origin/${BASE}" HEAD -- 'tests/unit' \
-    | grep -E '\.test\.(ts|mjs)$' || true)
+    | rg '\.test\.(ts|mjs)$' || true)
   # Subdirs test:unit actually runs (package.json allowlist) — anything else under
   # tests/unit/<sub>/ belongs to another runner (e.g. autoCombo -> vitest).
   UNIT_SUBDIRS=",api,auth,authz,build,cli,cli-helper,combo,compression,correctness,cors,db,db-adapters,docs,gamification,guardrails,lib,mcp,memory,runtime,security,services,settings,shared,ui,usage,"

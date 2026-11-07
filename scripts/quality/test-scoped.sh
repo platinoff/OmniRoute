@@ -40,11 +40,11 @@ HIT_HUB=false
 
 while IFS= read -r f; do
   [ -z "$f" ] && continue
-  if echo "$f" | grep -qE "$HUB_RE"; then
+  if echo "$f" | rg -q -e "$HUB_RE"; then
     HIT_HUB=true
-  elif echo "$f" | grep -qE '^tests/unit/.*\.test\.(ts|mjs)$'; then
+  elif echo "$f" | rg -q '^tests/unit/.*\.test\.(ts|mjs)$'; then
     TEST_FILES+=("$f")
-  elif echo "$f" | grep -qE '^(src|open-sse)/'; then
+  elif echo "$f" | rg -q '^(src|open-sse)/'; then
     SRC_FILES+=("$f")
   fi
 done <<< "$CHANGED"
@@ -68,7 +68,7 @@ MAP_FILE="$REPO_ROOT/config/quality/test-impact-map.json"
 if [ ${#SRC_FILES[@]} -gt 0 ] && [ -f "$MAP_FILE" ]; then
   # Use the TIA selection with the impact map
   SEL=$(printf '%s\n' "${SRC_FILES[@]}" | node "$REPO_ROOT/scripts/quality/select-impacted-tests.mjs" 2>/dev/null || echo "__RUN_ALL__")
-  if echo "$SEL" | grep -q "__RUN_ALL__"; then
+  if echo "$SEL" | rg -q "__RUN_ALL__"; then
     echo "[test:scoped] Unmapped source change — run full suite: npm run test:unit"
     exit 1
   fi

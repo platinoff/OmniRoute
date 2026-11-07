@@ -62,12 +62,8 @@ assert_contains() {
   local needle="$3"
   local matched=1
 
-  # Prefer rg when available, fallback to grep for portability
-  if command -v rg >/dev/null 2>&1; then
-    echo "${haystack}" | rg -qi "${needle}" && matched=0 || matched=1
-  else
-    echo "${haystack}" | grep -Eiq "${needle}" && matched=0 || matched=1
-  fi
+  # rg (ripgrep) is the canonical matcher; no grep fallback needed
+  echo "${haystack}" | rg -qi "${needle}" && matched=0 || matched=1
 
   if [[ "${matched}" -eq 0 ]]; then
     echo "      PASS: ${label}"

@@ -32,7 +32,7 @@ esac
 # dropped) plus VERSION itself, then pick the numerically highest.
 HIGHEST="$(
   {
-    sed 's/^v//' | grep -vE -- '-' || true
+    sed 's/^v//' | rg -v -e '-' || true
     printf '%s\n' "$VERSION"
   } | sort -V | tail -1
 )"

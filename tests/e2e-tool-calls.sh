@@ -20,7 +20,7 @@ require_tool() {
 
 check_corruption() {
   local value="$1"
-  grep -qE 'fifnd|grreep|lls|cacat|f{2,}ind|g{2,}rep' <<<"$value"
+  rg -q 'fifnd|grreep|lls|cacat|f{2,}ind|g{2,}rep' <<<"$value"
 }
 
 require_tool curl
@@ -90,7 +90,7 @@ stream_output=$(curl -fsS -X POST "$OMNIROUTE_URL/v1/chat/completions" \
   "model": "$MODEL",
   "stream": true,
   "messages": [
-    {"role": "user", "content": "Use shell tool: grep -r pattern /var"}
+    {"role": "user", "content": "Use shell tool: rg pattern /var"}
   ],
   "tools": [
     {
