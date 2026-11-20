@@ -82,7 +82,7 @@ API मार्ग एक सुसंगत नमुना अनुसरण
 
 ## प्रतिकार रनटाइम स्थिती
 
-OmniRoute कडे तीन संबंधित पण भिन्न तात्पुरत्या-अपयश यांत्रिके आहेत. रूटिंग वर्तन डिबग करताना त्यांचा व्याप्ती वेगळी ठेवा. एक झलक नकाशासाठी [3-लेयर प्रतिकार आरेख](./docs/diagrams/exported/resilience-3layers.svg) पहा (स्त्रोत: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd)).
+OmniRoute कडे तीन संबंधित पण भिन्न तात्पुरत्या-अपयश यांत्रिके आहेत. रूटिंग वर्तन डिबग करताना त्यांचा व्याप्ती वेगळी ठेवा. एक झलक नकाशासाठी [3-लेयर प्रतिकार आरेख](./docs/diagrams/exported/resilience-3layers.svg) पहा (स्त्रोत: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md)).
 
 ### प्रदाता सर्किट ब्रेकर
 

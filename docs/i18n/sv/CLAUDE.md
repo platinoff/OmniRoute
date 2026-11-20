@@ -85,7 +85,7 @@ API-rutter följer ett konsekvent mönster: `Rutt → CORS preflight → Zod kro
 OmniRoute har tre relaterade men distinkta mekanismer för tillfälliga fel. Håll deras
 omfång separerat när du felsöker routingbeteende. Se
 [3-lagers motståndsdiagram](./docs/diagrams/exported/resilience-3layers.svg)
-(källa: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(källa: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 för en översiktlig karta.
 
 ### Leverantörs Kretsbrytare

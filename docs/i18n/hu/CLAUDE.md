@@ -82,7 +82,7 @@ Az API útvonalak következetes mintát követnek: `Útvonal → CORS előzetes 
 
 Az OmniRoute három kapcsolódó, de különálló ideiglenes hiba mechanizmust tartalmaz. Tartsd a hatókörüket külön, amikor a routing viselkedést hibakeresed. Lásd a
 [3-rétegű ellenállás diagramot](./docs/diagrams/exported/resilience-3layers.svg)
-(forrás: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(forrás: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 egy pillantásra való térképhez.
 
 ### Szolgáltató Áramkör Megszakító

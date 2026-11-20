@@ -84,7 +84,7 @@ Client → /v1/chat/completions (Next.js route)
 
 OmniRoute יש שלושה מנגנוני כישלון זמניים הקשורים אך שונים. שמור על התחום שלהם נפרד כאשר אתה מדבג התנהגות נתיב. ראה את
 [דיאגרמת חוסן ב-3 שכבות](./docs/diagrams/exported/resilience-3layers.svg)
-(מקור: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(מקור: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 למפת מבט-על.
 
 ### מפסק מעגל ספק

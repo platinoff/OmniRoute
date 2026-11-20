@@ -84,7 +84,7 @@ Monorepo: `src/` (تطبيق Next.js 16)، `open-sse/` (مساحة عمل محر
 
 يمتلك OmniRoute ثلاث آليات فشل مؤقتة مرتبطة ولكن متميزة. حافظ على نطاقها منفصلًا عند تصحيح سلوك التوجيه. راجع
 [مخطط المرونة ذو 3 طبقات](./docs/diagrams/exported/resilience-3layers.svg)
-(المصدر: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(المصدر: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 لخريطة سريعة.
 
 ### قاطع دائرة المزود

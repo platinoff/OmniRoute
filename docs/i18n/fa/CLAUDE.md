@@ -84,7 +84,7 @@ Client → /v1/chat/completions (مسیر Next.js)
 
 OmniRoute سه مکانیزم موقت شکست مرتبط اما متمایز دارد. دامنه آن‌ها را هنگام اشکال‌زدایی رفتار مسیریابی جدا نگه دارید. برای یک نمای کلی، به
 [نقشه تاب‌آوری 3 لایه](./docs/diagrams/exported/resilience-3layers.svg)
-(منبع: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(منبع: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 مراجعه کنید.
 
 ### مدار شکن ارائه‌دهنده

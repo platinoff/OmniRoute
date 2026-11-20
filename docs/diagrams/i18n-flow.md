@@ -1,3 +1,6 @@
+# i18n-flow
+
+```mermaid
 %% Incremental hash-based i18n pipeline
 %% Reflects: scripts/i18n/* and docs/i18n/<locale>/*.md mirror layout
 %% v3.8.0
@@ -12,3 +15,4 @@ flowchart LR
   Target --> CI{"CI drift check<br/>(npm run i18n:check)"}
   CI -->|in sync| Pass["pass"]
   CI -->|drift| Fail["fail<br/>(exit 1)"]
+```

@@ -85,7 +85,7 @@ API-Routen folgen einem konsistenten Muster: `Route → CORS Preflight → Zod B
 OmniRoute hat drei verwandte, aber unterschiedliche Mechanismen für temporäre Fehler. Halten Sie ihren
 Bereich beim Debuggen des Routing-Verhaltens getrennt. Siehe das
 [3-Schichten-Resilienzdiagramm](./docs/diagrams/exported/resilience-3layers.svg)
-(Quelle: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(Quelle: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 für eine Übersichtskarte.
 
 ### Anbieter-Schaltkreisunterbrecher

@@ -1,3 +1,6 @@
+# mcp-tools-99
+
+```mermaid
 %% MCP Server tool inventory by category
 %% Reflects: open-sse/mcp-server/ - TOTAL_MCP_TOOL_COUNT in server.ts
 %% 102 definitions; 99 unique after the 3 agentSkill definitions duplicated in MCP_TOOLS are de-duplicated
@@ -16,3 +19,4 @@ flowchart LR
   MCP --> Notion["Notion (6)<br/>search, get_page, query_database,<br/>get_database, list_block_children,<br/>append_blocks"]
   MCP --> Obs["Obsidian (22)<br/>vault read/write, search,<br/>frontmatter, daily notes, ..."]
   MCP --> Local["Local Corpus (3)<br/>status, search, read"]
+```

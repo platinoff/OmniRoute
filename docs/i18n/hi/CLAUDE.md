@@ -82,7 +82,7 @@ API रूट एक सुसंगत पैटर्न का पालन �
 
 ## लचीलापन रनटाइम स्थिति
 
-OmniRoute में तीन संबंधित लेकिन अलग अस्थायी-फेल्योर तंत्र हैं। रूटिंग व्यवहार को डिबग करते समय उनके दायरे को अलग रखें। एक झलक के लिए [3-लेयर लचीलापन आरेख](./docs/diagrams/exported/resilience-3layers.svg) देखें (स्रोत: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))।
+OmniRoute में तीन संबंधित लेकिन अलग अस्थायी-फेल्योर तंत्र हैं। रूटिंग व्यवहार को डिबग करते समय उनके दायरे को अलग रखें। एक झलक के लिए [3-लेयर लचीलापन आरेख](./docs/diagrams/exported/resilience-3layers.svg) देखें (स्रोत: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))।
 
 ### प्रदाता सर्किट ब्रेकर
 

@@ -84,7 +84,7 @@ API 路由遵循一致的模式：`路由 → CORS 預檢 → Zod 請求體驗�
 
 OmniRoute 有三種相關但不同的臨時故障機制。在調試路由行為時，請保持它們的範圍分開。請參見
 [3 層彈性圖](./docs/diagrams/exported/resilience-3layers.svg)
-（來源: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd)）
+（來源: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md)）
 以獲取一目了然的地圖。
 
 ### 提供者電路斷路器

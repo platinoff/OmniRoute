@@ -82,7 +82,7 @@ API ルートは一貫したパターンに従います: `ルート → CORS プ
 
 ## レジリエンスランタイム状態
 
-OmniRoute には、関連性があるが異なる一時的な失敗メカニズムが3つあります。ルーティングの動作をデバッグする際には、それぞれのスコープを分けておくことが重要です。概要マップについては、[3層レジリエンスダイアグラム](./docs/diagrams/exported/resilience-3layers.svg)を参照してください (出典: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))。
+OmniRoute には、関連性があるが異なる一時的な失敗メカニズムが3つあります。ルーティングの動作をデバッグする際には、それぞれのスコープを分けておくことが重要です。概要マップについては、[3層レジリエンスダイアグラム](./docs/diagrams/exported/resilience-3layers.svg)を参照してください (出典: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))。
 
 ### プロバイダーサーキットブレーカー
 

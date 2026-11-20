@@ -10,7 +10,7 @@ OmniRoute has three distinct but related resilience mechanisms. Each has a diffe
 
 ![3-layer resilience model](../diagrams/exported/resilience-3layers.svg)
 
-> Source: [diagrams/resilience-3layers.mmd](../diagrams/resilience-3layers.mmd)
+> Source: [diagrams/resilience-3layers.md](../diagrams/resilience-3layers.md)
 
 ## 1. Provider Circuit Breaker
 

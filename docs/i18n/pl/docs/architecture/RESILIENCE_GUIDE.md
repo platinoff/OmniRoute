@@ -10,7 +10,7 @@ OmniRoute ma trzy odrębne, ale powiązane mechanizmy odporności. Każdy ma inn
 
 ![3-layer resilience model](../diagrams/exported/resilience-3layers.svg)
 
-> Źródło: [diagrams/resilience-3layers.mmd](../diagrams/resilience-3layers.mmd)
+> Źródło: [diagrams/resilience-3layers.md](../diagrams/resilience-3layers.md)
 
 ## 1. Provider Circuit Breaker
 

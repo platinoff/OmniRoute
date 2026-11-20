@@ -165,7 +165,7 @@ Silnik Auto-Combo dynamicznie wybiera najlepszego providera/model dla każdego �
 
 ![Auto-Combo 12-factor scoring](../diagrams/exported/auto-combo-12factor.svg)
 
-> Źródło: [diagrams/auto-combo-12factor.mmd](../diagrams/auto-combo-12factor.mmd) (regeneruj przez `npm run docs:render-diagrams`).
+> Źródło: [diagrams/auto-combo-12factor.md](../diagrams/auto-combo-12factor.md) (regeneruj przez `npm run docs:render-diagrams`).
 
 | Czynnik               | Domyślna waga | Opis                                                                                                     |
 | :-------------------- | :------------ | :------------------------------------------------------------------------------------------------------- |

@@ -82,7 +82,7 @@ API routes follow a consistent pattern: `Route → CORS preflight → Zod body v
 
 OmniRoute มีกลไกการล้มเหลวชั่วคราวที่เกี่ยวข้องกันสามอย่าง แต่แตกต่างกัน รักษาขอบเขตของพวกเขาแยกกันเมื่อทำการดีบักพฤติกรรมการจัดเส้นทาง ดู
 [3-layer resilience diagram](./docs/diagrams/exported/resilience-3layers.svg)
-(แหล่งที่มา: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(แหล่งที่มา: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 สำหรับแผนที่แบบคร่าวๆ
 
 ### Provider Circuit Breaker

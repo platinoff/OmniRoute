@@ -82,7 +82,7 @@ API 路由遵循一致的模式：`路由 → CORS 预检 → Zod 请求体校�
 
 ## 容灾运行时状态
 
-OmniRoute 有三个彼此相关但各自独立的临时故障机制。调试路由行为时请保持它们的作用域分离。快速概览参见 [3 层容灾示意图](./docs/diagrams/exported/resilience-3layers.svg)（源文件：[docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd)）。
+OmniRoute 有三个彼此相关但各自独立的临时故障机制。调试路由行为时请保持它们的作用域分离。快速概览参见 [3 层容灾示意图](./docs/diagrams/exported/resilience-3layers.svg)（源文件：[docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md)）。
 
 ### 服务商熔断器
 

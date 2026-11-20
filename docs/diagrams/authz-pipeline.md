@@ -1,3 +1,6 @@
+# authz-pipeline
+
+```mermaid
 %% AuthZ pipeline (3 route classes + policy evaluation)
 %% Reflects: src/middleware.ts, src/server/authz/pipeline.ts,
 %%           src/server/authz/policies/{public,clientApi,management}.ts
@@ -21,3 +24,4 @@ flowchart LR
   MgmtP -->|no auth| Reject401Mgmt["401 / 302 /login"]
 
   Stamp --> Handler["Handler<br/>(uses assertAuth)"]
+```

@@ -118,7 +118,7 @@ handleComboChat（與持久化組合使用相同引擎）
 
 ![自動組合 12 因子評分](../diagrams/exported/auto-combo-12factor.svg)
 
-> 來源：[diagrams/auto-combo-12factor.mmd](../diagrams/auto-combo-12factor.mmd)（可透過 `npm run docs:render-diagrams` 重新生成）。
+> 來源：[diagrams/auto-combo-12factor.md](../diagrams/auto-combo-12factor.md)（可透過 `npm run docs:render-diagrams` 重新生成）。
 
 | 因子                                    | 預設權重 | 說明                                                                         |
 | :-------------------------------------- | :------- | :--------------------------------------------------------------------------- |

@@ -83,7 +83,7 @@ Rutele API urmează un model consistent: `Ruta → CORS preflight → validare c
 ## Starea de Execuție a Rezilienței
 
 OmniRoute are trei mecanisme de eșec temporar, legate dar distincte. Mențineți domeniul lor separat atunci când depanați comportamentul rutării. Consultați diagrama [rezilienței cu 3 straturi](./docs/diagrams/exported/resilience-3layers.svg)
-(sursa: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(sursa: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 pentru o hartă rapidă.
 
 ### Circuit Breaker al Provider-ului

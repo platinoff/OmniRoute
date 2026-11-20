@@ -1,3 +1,6 @@
+# db-schema-overview
+
+```mermaid
 %% Database schema overview (selected core tables)
 %% Reflects: src/lib/db/* (95+ modules, 110+ migrations)
 %% v3.8.0
@@ -14,3 +17,4 @@ erDiagram
   agent_tasks ||--o{ agent_task_events : streams
   audit_log }|--|| api_keys : by
   mcp_audit }|--|| api_keys : by
+```

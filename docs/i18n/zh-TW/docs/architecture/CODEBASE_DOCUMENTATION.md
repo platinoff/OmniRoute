@@ -330,7 +330,7 @@ v1/
 
 ![資料庫架構概覽（選取的核心資料表）](../diagrams/exported/db-schema-overview.svg)
 
-> 來源：[diagrams/db-schema-overview.mmd](../diagrams/db-schema-overview.mmd)
+> 來源：[diagrams/db-schema-overview.md](../diagrams/db-schema-overview.md)
 
 領域模組（每個掌管一個或多個資料表）：`apiKeys.ts`、`backup.ts`、
 `batches.ts`、`cleanup.ts`、`cliToolState.ts`、`combos.ts`、
@@ -686,7 +686,7 @@ bin/
 
 ![請求管線（/v1/chat/completions）](../diagrams/exported/request-pipeline.svg)
 
-> 來源：[diagrams/request-pipeline.mmd](../diagrams/request-pipeline.mmd)
+> 來源：[diagrams/request-pipeline.md](../diagrams/request-pipeline.md)
 
 ```
 客戶端請求

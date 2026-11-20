@@ -85,7 +85,7 @@ API marşrutları ardıcıl bir nümunəni izləyir: `Marşrut → CORS əvvəlc
 OmniRoute-un üç əlaqəli, lakin fərqli müvəqqəti uğursuzluq mexanizmi var. Marşrut davranışını düzəldərkən onların
 sahəsini ayrı saxlayın. Bir baxışda xəritə üçün
 [3-laylı davamlılıq diaqramı](./docs/diagrams/exported/resilience-3layers.svg)
-(mənbə: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))-na baxın.
+(mənbə: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))-na baxın.
 
 ### Təchizatçı Dövrə Qırıcı
 

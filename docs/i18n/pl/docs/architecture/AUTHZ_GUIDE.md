@@ -13,7 +13,7 @@ OmniRoute ma potok autoryzacji zależny od trasy, który bramkuje każde żądan
 
 ![AuthZ pipeline (3 route classes + policy evaluation)](../diagrams/exported/authz-pipeline.svg)
 
-> Source: [diagrams/authz-pipeline.mmd](../diagrams/authz-pipeline.mmd)
+> Source: [diagrams/authz-pipeline.md](../diagrams/authz-pipeline.md)
 
 ## Dwa tryby uwierzytelniania
 

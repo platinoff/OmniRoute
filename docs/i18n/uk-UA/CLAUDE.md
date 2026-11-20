@@ -85,7 +85,7 @@ API маршрути дотримуються послідовного шабл�
 OmniRoute має три пов'язані, але різні механізми тимчасових збоїв. Тримайте їх
 обсяг окремим під час налагодження поведінки маршрутизації. Дивіться
 [діаграму стійкості з 3 шарів](./docs/diagrams/exported/resilience-3layers.svg)
-(джерело: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(джерело: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 для швидкого огляду.
 
 ### Вимикач постачальника

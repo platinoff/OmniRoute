@@ -84,7 +84,7 @@ Laluan API mengikuti pola yang konsisten: `Laluan → CORS preflight → pengesa
 
 OmniRoute mempunyai tiga mekanisme kegagalan sementara yang berkaitan tetapi berbeza. Pastikan skop mereka terpisah semasa menyahpepijat tingkah laku penghalaan. Lihat
 [rajah ketahanan 3-lapisan](./docs/diagrams/exported/resilience-3layers.svg)
-(sumber: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(sumber: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 untuk peta ringkas.
 
 ### Pemutus Litar Penyedia

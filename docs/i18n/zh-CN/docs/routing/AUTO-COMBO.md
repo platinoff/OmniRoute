@@ -106,7 +106,7 @@ Auto-Combo 引擎使用**12 因子评分函数**（定义在 `open-sse/services/
 
 ![Auto-Combo 12-factor scoring](../diagrams/exported/auto-combo-12factor.svg)
 
-> 来源：[diagrams/auto-combo-12factor.mmd](../diagrams/auto-combo-12factor.mmd)（通过 `npm run docs:render-diagrams` 重新生成）。
+> 来源：[diagrams/auto-combo-12factor.md](../diagrams/auto-combo-12factor.md)（通过 `npm run docs:render-diagrams` 重新生成）。
 
 | 因子                    | 默认权重 | 描述                                                                                           |
 | :---------------------- | :------- | :--------------------------------------------------------------------------------------------- |

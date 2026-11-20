@@ -84,7 +84,7 @@ API راستے ایک مستقل پیٹرن کی پیروی کرتے ہیں: `Ro
 
 OmniRoute کے پاس تین متعلقہ لیکن مختلف عارضی ناکامی کے طریقے ہیں۔ ان کی دائرہ کار کو راستے کے رویے کی خرابی کے دوران الگ رکھیں۔ دیکھیں
 [3-layer resilience diagram](./docs/diagrams/exported/resilience-3layers.svg)
-(ماخذ: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(ماخذ: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 ایک نظر میں نقشہ کے لیے۔
 
 ### فراہم کنندہ سرکٹ بریکر

@@ -80,7 +80,7 @@ API માર્ગો એક સંગ્રહિત પેટર્નનુ�
 
 ## રેસિલિયન્સ રનટાઇમ સ્ટેટ
 
-OmniRoute પાસે ત્રણ સંબંધિત પરંતુ અલગ તાત્કાલિક-અસફળતા મિકેનિઝમ છે. રૂટિંગ વર્તન ડિબગ કરતી વખતે તેમના વ્યાપને અલગ રાખો. એક નજરમાં નકશો માટે [3-સ્તરીય રેસિલિયન્સ આકૃતિ](./docs/diagrams/exported/resilience-3layers.svg) જુઓ (સ્ત્રોત: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd)).
+OmniRoute પાસે ત્રણ સંબંધિત પરંતુ અલગ તાત્કાલિક-અસફળતા મિકેનિઝમ છે. રૂટિંગ વર્તન ડિબગ કરતી વખતે તેમના વ્યાપને અલગ રાખો. એક નજરમાં નકશો માટે [3-સ્તરીય રેસિલિયન્સ આકૃતિ](./docs/diagrams/exported/resilience-3layers.svg) જુઓ (સ્ત્રોત: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md)).
 
 ### પ્રદાતા સર્કિટ બ્રેકર
 

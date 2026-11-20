@@ -1,3 +1,6 @@
+# auto-combo-12factor
+
+```mermaid
 %% Auto-Combo 13-factor scoring
 %% Reflects: open-sse/services/autoCombo/scoring.ts (DEFAULT_WEIGHTS, sum = 1.0)
 %% v3.8.49
@@ -25,3 +28,4 @@ flowchart TB
   Factors --> Final["Sort by score<br/>(desc)"]
   Final --> Top["Pick top-N targets"]
   Top --> Dispatch["Dispatch sequentially<br/>(short-circuit on success)"]
+```

@@ -94,11 +94,11 @@ v3.8.0 平台的权威版本控制 Mermaid 源文件位于
 
 ![请求管线 (/v1/chat/completions)](../diagrams/exported/request-pipeline.svg)
 
-> 源文件：[diagrams/request-pipeline.mmd](../diagrams/request-pipeline.mmd)
+> 源文件：[diagrams/request-pipeline.md](../diagrams/request-pipeline.md)
 
 ![三层容灾模型](../diagrams/exported/resilience-3layers.svg)
 
-> 源文件：[diagrams/resilience-3layers.mmd](../diagrams/resilience-3layers.mmd) — 另见
+> 源文件：[diagrams/resilience-3layers.md](../diagrams/resilience-3layers.md) — 另见
 > [RESILIENCE_GUIDE.md](./RESILIENCE_GUIDE.md) 和 `CLAUDE.md` 中的容灾参考。
 
 ## 范围与边界

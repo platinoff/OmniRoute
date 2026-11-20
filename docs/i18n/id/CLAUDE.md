@@ -84,7 +84,7 @@ Rute API mengikuti pola yang konsisten: `Rute → CORS preflight → validasi bo
 
 OmniRoute memiliki tiga mekanisme kegagalan sementara yang terkait tetapi berbeda. Jaga agar ruang lingkup mereka terpisah saat melakukan debug perilaku routing. Lihat
 [diagram ketahanan 3-lapisan](./docs/diagrams/exported/resilience-3layers.svg)
-(sumber: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(sumber: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 untuk peta sekilas.
 
 ### Pemutus Sirkuit Penyedia

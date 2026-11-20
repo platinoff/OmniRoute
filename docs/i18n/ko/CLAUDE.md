@@ -82,7 +82,7 @@ API 경로는 일관된 패턴을 따릅니다: `경로 → CORS 사전 비행 �
 
 ## 복원력 런타임 상태
 
-OmniRoute에는 세 가지 관련 있지만 구별되는 임시 실패 메커니즘이 있습니다. 라우팅 동작을 디버깅할 때 그 범위를 분리하십시오. 한눈에 볼 수 있는 맵은 [3계층 복원력 다이어그램](./docs/diagrams/exported/resilience-3layers.svg)에서 확인할 수 있습니다 (출처: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd)).
+OmniRoute에는 세 가지 관련 있지만 구별되는 임시 실패 메커니즘이 있습니다. 라우팅 동작을 디버깅할 때 그 범위를 분리하십시오. 한눈에 볼 수 있는 맵은 [3계층 복원력 다이어그램](./docs/diagrams/exported/resilience-3layers.svg)에서 확인할 수 있습니다 (출처: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md)).
 
 ### 공급자 회로 차단기
 

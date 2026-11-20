@@ -84,7 +84,7 @@ API маршрутите следват последователен модел:
 
 OmniRoute има три свързани, но различни механизма за временно неуспех. Дръжте обхвата им отделен при отстраняване на проблеми с маршрутизацията. Вижте
 [диаграмата на 3-те слоя на устойчивостта](./docs/diagrams/exported/resilience-3layers.svg)
-(източник: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(източник: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 за бърз преглед.
 
 ### Прекъсвач на доставчика

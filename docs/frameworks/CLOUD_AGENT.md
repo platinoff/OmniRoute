@@ -20,7 +20,7 @@ artifact, and supports follow-up messages and (in some providers) plan approval 
 
 ![Cloud Agent task lifecycle](../diagrams/exported/cloud-agent-flow.svg)
 
-> Source: [diagrams/cloud-agent-flow.mmd](../diagrams/cloud-agent-flow.mmd)
+> Source: [diagrams/cloud-agent-flow.md](../diagrams/cloud-agent-flow.md)
 
 ## Supported Agents
 

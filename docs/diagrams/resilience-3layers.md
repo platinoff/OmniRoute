@@ -1,3 +1,6 @@
+# resilience-3layers
+
+```mermaid
 %% 3-layer resilience model
 %% Reflects: src/shared/utils/circuitBreaker.ts, src/sse/services/auth.ts,
 %%           open-sse/services/accountFallback.ts
@@ -19,3 +22,4 @@ flowchart TB
   Exec -->|"408 / 500 / 502 / 503 / 504"| TripL1["Trip provider breaker"]
   Exec -->|"401 / 403 (account)"| TripL2["Start connection cooldown"]
   Exec -->|"429 quota (model)"| TripL3["Start model lockout"]
+```

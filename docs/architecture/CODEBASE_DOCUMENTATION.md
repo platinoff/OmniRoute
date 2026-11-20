@@ -335,7 +335,7 @@ Singleton SQLite database (`getDbInstance()` in `core.ts`, WAL journaling).
 
 ![Database schema overview (selected core tables)](../diagrams/exported/db-schema-overview.svg)
 
-> Source: [diagrams/db-schema-overview.mmd](../diagrams/db-schema-overview.mmd)
+> Source: [diagrams/db-schema-overview.md](../diagrams/db-schema-overview.md)
 
 Domain modules (each owns one or more tables): `apiKeys.ts`, `backup.ts`,
 `batches.ts`, `cleanup.ts`, `cliToolState.ts`, `combos.ts`,
@@ -693,7 +693,7 @@ Organized into 6 subfolders by purpose.
 
 ![Request pipeline (/v1/chat/completions)](../diagrams/exported/request-pipeline.svg)
 
-> Source: [diagrams/request-pipeline.mmd](../diagrams/request-pipeline.mmd)
+> Source: [diagrams/request-pipeline.md](../diagrams/request-pipeline.md)
 
 ```
 Client request

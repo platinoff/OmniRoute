@@ -335,7 +335,7 @@ Singletonowa baza SQLite (`getDbInstance()` w `core.ts`, journalowanie WAL).
 
 ![Przegląd schematu bazy (wybrane tabele rdzeniowe)](../diagrams/exported/db-schema-overview.svg)
 
-> Źródło: [diagrams/db-schema-overview.mmd](../diagrams/db-schema-overview.mmd)
+> Źródło: [diagrams/db-schema-overview.md](../diagrams/db-schema-overview.md)
 
 Moduły domenowe (każdy posiada jedną lub więcej tabel): `apiKeys.ts`, `backup.ts`,
 `batches.ts`, `cleanup.ts`, `cliToolState.ts`, `combos.ts`,
@@ -693,7 +693,7 @@ Zorganizowane w 6 podkatalogów według przeznaczenia.
 
 ![Pipeline requestu (/v1/chat/completions)](../diagrams/exported/request-pipeline.svg)
 
-> Źródło: [diagrams/request-pipeline.mmd](../diagrams/request-pipeline.mmd)
+> Źródło: [diagrams/request-pipeline.md](../diagrams/request-pipeline.md)
 
 ```
 Client request

@@ -84,7 +84,7 @@ API பாதைகள் ஒரே மாதிரியான வடிவத�
 
 OmniRoute இல் மூன்று தொடர்புடைய ஆனால் தனித்துவமான தற்காலிக-தவறுகள் முறைமைகள் உள்ளன. வழிமுறை நடத்தை பிழைகளை சரிசெய்யும் போது அவற்றின் பரப்பை தனியாக வைத்திருக்கவும். ஒரு பார்வையில் வரைபடத்திற்கான
 [3-அடுக்கு நிலைத்தன்மை வரைபடம்](./docs/diagrams/exported/resilience-3layers.svg)
-(மூல: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd)) ஐப் பார்க்கவும்.
+(மூல: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md)) ஐப் பார்க்கவும்.
 
 ### வழங்குநர் சுற்று முறையீட்டு
 

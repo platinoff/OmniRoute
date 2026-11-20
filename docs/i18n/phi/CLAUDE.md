@@ -84,7 +84,7 @@ Ang mga API route ay sumusunod sa isang pare-parehong pattern: `Route → CORS p
 
 Ang OmniRoute ay may tatlong kaugnay ngunit magkakaibang mekanismo ng pansamantalang pagkabigo. Panatilihing hiwalay ang kanilang saklaw kapag nag-debug ng pag-uugali ng routing. Tingnan ang
 [3-layer resilience diagram](./docs/diagrams/exported/resilience-3layers.svg)
-(source: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(source: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 para sa isang mabilis na mapa.
 
 ### Provider Circuit Breaker

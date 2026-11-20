@@ -82,7 +82,7 @@ API রুটগুলি একটি সঙ্গতিপূর্ণ প্�
 
 ## রেজিলিয়েন্স রানটাইম স্টেট
 
-OmniRoute-এ তিনটি সম্পর্কিত কিন্তু আলাদা অস্থায়ী-ব্যর্থতা মেকানিজম রয়েছে। রাউটিং আচরণ ডিবাগ করার সময় তাদের পরিধি আলাদা রাখুন। একটি সংক্ষিপ্ত মানচিত্রের জন্য [3-স্তরের রেজিলিয়েন্স ডায়াগ্রাম](./docs/diagrams/exported/resilience-3layers.svg) দেখুন (সূত্র: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))।
+OmniRoute-এ তিনটি সম্পর্কিত কিন্তু আলাদা অস্থায়ী-ব্যর্থতা মেকানিজম রয়েছে। রাউটিং আচরণ ডিবাগ করার সময় তাদের পরিধি আলাদা রাখুন। একটি সংক্ষিপ্ত মানচিত্রের জন্য [3-স্তরের রেজিলিয়েন্স ডায়াগ্রাম](./docs/diagrams/exported/resilience-3layers.svg) দেখুন (সূত্র: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))।
 
 ### প্রোভাইডার সার্কিট ব্রেকার
 

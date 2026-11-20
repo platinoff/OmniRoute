@@ -1,3 +1,6 @@
+# request-pipeline
+
+```mermaid
 %% Request pipeline for /v1/chat/completions
 %% Reflects: src/app/api/v1/chat/completions/route.ts → open-sse/handlers/chatCore.ts
 %% v3.8.0
@@ -22,3 +25,4 @@ flowchart LR
   Upstream --> Stream["SSE / JSON"]
   Stream --> Transformer["responsesTransformer<br/>(Responses↔Chat)"]
   Transformer --> Client
+```

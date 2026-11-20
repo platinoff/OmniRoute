@@ -83,7 +83,7 @@ API-reitit noudattavat johdonmukaista kaavaa: `Reitti → CORS-esivalmistelu →
 OmniRoute:lla on kolme liittyvää mutta erilaista tilapäisen epäonnistumisen mekanismia. Pidä niiden
 alueet erillään reitityskäyttäytymisen vianetsinnässä. Katso
 [3-kerroksinen resilienssikaavio](./docs/diagrams/exported/resilience-3layers.svg)
-(lähde: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(lähde: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 nopeaa karttaa varten.
 
 ### Palveluntarjoajan Piirikytkin

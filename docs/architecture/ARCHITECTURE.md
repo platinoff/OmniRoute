@@ -92,11 +92,11 @@ the rest are linked from their domain-specific guides.
 
 ![Request pipeline (/v1/chat/completions)](../diagrams/exported/request-pipeline.svg)
 
-> Source: [diagrams/request-pipeline.mmd](../diagrams/request-pipeline.mmd)
+> Source: [diagrams/request-pipeline.md](../diagrams/request-pipeline.md)
 
 ![3-layer resilience model](../diagrams/exported/resilience-3layers.svg)
 
-> Source: [diagrams/resilience-3layers.mmd](../diagrams/resilience-3layers.mmd) — also linked from
+> Source: [diagrams/resilience-3layers.md](../diagrams/resilience-3layers.md) — also linked from
 > [RESILIENCE_GUIDE.md](./RESILIENCE_GUIDE.md) and the `CLAUDE.md` resilience reference.
 
 ## Scope and Boundaries

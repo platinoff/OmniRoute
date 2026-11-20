@@ -85,7 +85,7 @@ Las rutas de la API siguen un patrón consistente: `Ruta → preflight CORS → 
 OmniRoute tiene tres mecanismos de falla temporal relacionados pero distintos. Mantenga su
 alcance separado al depurar el comportamiento de enrutamiento. Consulte el
 [diagrama de resiliencia de 3 capas](./docs/diagrams/exported/resilience-3layers.svg)
-(fuente: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(fuente: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 para un mapa de un vistazo.
 
 ### Cortacircuito del Proveedor

@@ -85,7 +85,7 @@ API-ruter følger et konsistent mønster: `Rute → CORS preflight → Zod body 
 OmniRoute har tre relaterte, men distinkte mekanismer for midlertidig feil. Hold deres
 omfang adskilt når du feilsøker rutingadferd. Se den
 [3-lags motstandsdyktighetsdiagram](./docs/diagrams/exported/resilience-3layers.svg)
-(kilde: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(kilde: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 for et oversiktskart.
 
 ### Leverandør Kretsbryter

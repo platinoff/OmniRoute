@@ -44,7 +44,7 @@ writeFileSync(
 );
 
 const sources = readdirSync(srcDir)
-  .filter((f) => f.endsWith(".mmd"))
+  .filter((f) => f.endsWith(".md"))
   .sort();
 
 if (sources.length === 0) {

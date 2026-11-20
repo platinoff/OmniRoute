@@ -84,7 +84,7 @@ Các route API tuân theo một mẫu nhất quán: `Route → CORS preflight �
 
 OmniRoute có ba cơ chế tạm thời liên quan nhưng khác biệt về lỗi. Giữ cho phạm vi của chúng tách biệt khi gỡ lỗi hành vi định tuyến. Xem
 [biểu đồ độ bền 3 lớp](./docs/diagrams/exported/resilience-3layers.svg)
-(nguồn: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(nguồn: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 để có cái nhìn tổng quan.
 
 ### Cầu Dao Nhà Cung Cấp

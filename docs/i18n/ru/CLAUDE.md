@@ -85,7 +85,7 @@ API маршруты следуют последовательному шабл�
 OmniRoute имеет три связанных, но различных механизма временных сбоев. Держите их
 область применения отдельно при отладке поведения маршрутизации. См.
 [диаграмму устойчивости в 3 слоя](./docs/diagrams/exported/resilience-3layers.svg)
-(источник: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(источник: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 для быстрого обзора.
 
 ### Прерывание цепи поставщика

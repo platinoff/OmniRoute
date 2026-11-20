@@ -92,11 +92,11 @@ v3.8.0 平台的標準版本控制 Mermaid 原始檔位於
 
 ![請求管線 (/v1/chat/completions)](../diagrams/exported/request-pipeline.svg)
 
-> 原始檔：[diagrams/request-pipeline.mmd](../diagrams/request-pipeline.mmd)
+> 原始檔：[diagrams/request-pipeline.md](../diagrams/request-pipeline.md)
 
 ![三層韌性模型](../diagrams/exported/resilience-3layers.svg)
 
-> 原始檔：[diagrams/resilience-3layers.mmd](../diagrams/resilience-3layers.mmd) — 亦可參閱
+> 原始檔：[diagrams/resilience-3layers.md](../diagrams/resilience-3layers.md) — 亦可參閱
 > [RESILIENCE_GUIDE.md](./RESILIENCE_GUIDE.md) 與 `CLAUDE.md` 韌性參考。
 
 ## 範圍與邊界

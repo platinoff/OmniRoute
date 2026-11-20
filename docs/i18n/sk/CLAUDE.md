@@ -85,7 +85,7 @@ API trasy nasledujú konzistentný vzor: `Trasa → CORS preflight → Zod valid
 OmniRoute má tri súvisiace, ale odlišné mechanizmy dočasného zlyhania. Udržujte ich
 rozsah oddelený pri ladení správania routingu. Pozrite sa na
 [diagram odolnosti s 3 vrstvami](./docs/diagrams/exported/resilience-3layers.svg)
-(zdroj: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(zdroj: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 pre rýchly prehľad.
 
 ### Obvod poskytovateľa

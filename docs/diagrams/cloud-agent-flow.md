@@ -1,3 +1,6 @@
+# cloud-agent-flow
+
+```mermaid
 %% Cloud Agent task lifecycle
 %% Reflects: src/lib/cloudAgent/* and src/app/api/v1/agents/tasks/*
 %% Supported agents: codex-cloud, devin, jules
@@ -30,3 +33,4 @@ sequenceDiagram
   Note over Ag: Async execution upstream
 
   Ag-->>DB: stream events / final result
+```

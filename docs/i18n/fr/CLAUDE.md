@@ -84,7 +84,7 @@ Les routes API suivent un modèle cohérent : `Route → pré-vérification CORS
 
 OmniRoute a trois mécanismes de défaillance temporaire liés mais distincts. Gardez leur portée séparée lors du débogage du comportement de routage. Voir le
 [diagramme de résilience à 3 couches](./docs/diagrams/exported/resilience-3layers.svg)
-(source : [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(source : [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 pour une vue d'ensemble.
 
 ### Disjoncteur de Fournisseur

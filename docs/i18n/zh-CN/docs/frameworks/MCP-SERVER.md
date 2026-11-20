@@ -12,7 +12,7 @@ lastUpdated: 2026-06-28
 
 ![MCP tool inventory (104 tools by category)](../diagrams/exported/mcp-tools-104.svg)
 
-> 来源：[diagrams/mcp-tools-104.mmd](../diagrams/mcp-tools-104.mmd)（通过 `npm run docs:render-diagrams` 重新生成）。
+> 来源：[diagrams/mcp-tools-104.md](../diagrams/mcp-tools-104.md)（通过 `npm run docs:render-diagrams` 重新生成）。
 
 ## 安装
 

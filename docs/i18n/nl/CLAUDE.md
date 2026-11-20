@@ -85,7 +85,7 @@ API-routes volgen een consistent patroon: `Route → CORS preflight → Zod body
 OmniRoute heeft drie gerelateerde maar verschillende mechanismen voor tijdelijke fouten. Houd hun
 bereik gescheiden bij het debuggen van routeringsgedrag. Zie het
 [3-laags veerkracht diagram](./docs/diagrams/exported/resilience-3layers.svg)
-(bron: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(bron: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 voor een overzichtskaart.
 
 ### Provider Circuit Breaker

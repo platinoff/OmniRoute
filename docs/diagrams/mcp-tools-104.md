@@ -1,3 +1,6 @@
+# mcp-tools-104
+
+```mermaid
 %% MCP Server tool inventory by category
 %% Reflects: open-sse/mcp-server/ — TOTAL_MCP_TOOL_COUNT in server.ts (countUniqueMcpTools)
 %% Unique contributions: MCP_TOOLS 42 + memory 3 + skill 4 + githubSkill 3 + pool 6
@@ -18,3 +21,4 @@ flowchart LR
   MCP --> Notion["Notion (6)<br/>search, get_page, query_database,<br/>get_database, list_block_children,<br/>append_blocks"]
   MCP --> Obs["Obsidian (22)<br/>vault read/write, search,<br/>frontmatter, daily notes, …"]
   MCP --> Cmp["Compression Studios (+2)<br/>beyond the 11 in Core"]
+```

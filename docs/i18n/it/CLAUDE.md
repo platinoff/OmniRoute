@@ -85,7 +85,7 @@ Le rotte API seguono uno schema coerente: `Roatta → preflight CORS → validaz
 OmniRoute ha tre meccanismi di guasto temporaneo correlati ma distinti. Mantieni il loro
 ambito separato durante il debug del comportamento di routing. Vedi il
 [diagramma di resilienza a 3 livelli](./docs/diagrams/exported/resilience-3layers.svg)
-(fonte: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(fonte: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 per una mappa a colpo d'occhio.
 
 ### Interruttore di Circuito del Fornitore

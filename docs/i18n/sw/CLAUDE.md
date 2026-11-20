@@ -84,7 +84,7 @@ Njia za API zinafuata muundo thabiti: `Njia → CORS preflight → Uthibitisho w
 
 OmniRoute ina mitambo mitatu inayohusiana lakini tofauti ya kushindwa kwa muda. Hifadhi upeo wao tofauti unapofanya ufuatiliaji wa tabia ya mwelekeo. Tazama
 [chati ya uhimilivu ya tabaka 3](./docs/diagrams/exported/resilience-3layers.svg)
-(chanzo: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))
+(chanzo: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))
 kwa ramani ya haraka.
 
 ### Mzigo wa Circuit wa Mtoa

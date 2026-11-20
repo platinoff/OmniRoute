@@ -92,11 +92,11 @@ pozostałe są linkowane z przewodników domenowych.
 
 ![Request pipeline (/v1/chat/completions)](../diagrams/exported/request-pipeline.svg)
 
-> Źródło: [diagrams/request-pipeline.mmd](../diagrams/request-pipeline.mmd)
+> Źródło: [diagrams/request-pipeline.md](../diagrams/request-pipeline.md)
 
 ![3-layer resilience model](../diagrams/exported/resilience-3layers.svg)
 
-> Źródło: [diagrams/resilience-3layers.mmd](../diagrams/resilience-3layers.mmd) — także linkowane z
+> Źródło: [diagrams/resilience-3layers.md](../diagrams/resilience-3layers.md) — także linkowane z
 > [RESILIENCE_GUIDE.md](./RESILIENCE_GUIDE.md) oraz referencji resilience w `CLAUDE.md`.
 
 ## Zakres i granice

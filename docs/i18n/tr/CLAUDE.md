@@ -82,7 +82,7 @@ API yolları tutarlı bir desen izler: `Route → CORS ön uç → Zod gövde do
 
 ## Dayanıklılık Çalışma Durumu
 
-OmniRoute, üç ilgili ancak farklı geçici hata mekanizmasına sahiptir. Yönlendirme davranışını hata ayıklarken kapsamlarını ayrı tutun. Bir bakışta harita için [3 katmanlı dayanıklılık diyagramı](./docs/diagrams/exported/resilience-3layers.svg) (kaynak: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd))'na bakın.
+OmniRoute, üç ilgili ancak farklı geçici hata mekanizmasına sahiptir. Yönlendirme davranışını hata ayıklarken kapsamlarını ayrı tutun. Bir bakışta harita için [3 katmanlı dayanıklılık diyagramı](./docs/diagrams/exported/resilience-3layers.svg) (kaynak: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md))'na bakın.
 
 ### Sağlayıcı Devre Kesici
 

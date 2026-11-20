@@ -20,7 +20,7 @@ artefakt i obsługuje wiadomości follow-up oraz (u części providerów) bramki
 
 ![Cloud Agent task lifecycle](../diagrams/exported/cloud-agent-flow.svg)
 
-> Source: [diagrams/cloud-agent-flow.mmd](../diagrams/cloud-agent-flow.mmd)
+> Source: [diagrams/cloud-agent-flow.md](../diagrams/cloud-agent-flow.md)
 
 ## Obsługiwani agenci
 

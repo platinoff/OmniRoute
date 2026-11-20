@@ -317,7 +317,7 @@ v1/
 
 ![数据库 Schema 概览（精选核心表）](../diagrams/exported/db-schema-overview.svg)
 
-> 来源：[diagrams/db-schema-overview.mmd](../diagrams/db-schema-overview.mmd)
+> 来源：[diagrams/db-schema-overview.md](../diagrams/db-schema-overview.md)
 
 领域模块（每个模块拥有一张或多张表）：`apiKeys.ts`、`backup.ts`、
 `batches.ts`、`cleanup.ts`、`cliToolState.ts`、`combos.ts`、
@@ -669,7 +669,7 @@ bin/
 
 ![请求管道（/v1/chat/completions）](../diagrams/exported/request-pipeline.svg)
 
-> 来源：[diagrams/request-pipeline.mmd](../diagrams/request-pipeline.mmd)
+> 来源：[diagrams/request-pipeline.md](../diagrams/request-pipeline.md)
 
 ```
 客户端请求

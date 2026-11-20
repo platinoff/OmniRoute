@@ -80,7 +80,7 @@ API మార్గాలు ఒక సుసంగత నమూనాను అ
 
 ## స్థిరత్వం రన్‌టైమ్ స్థితి
 
-OmniRouteకు మూడు సంబంధిత కానీ ప్రత్యేక తాత్కాలిక-పరాజయ యంత్రాంగాలు ఉన్నాయి. రూటింగ్ ప్రవర్తనను డీబగ్ చేస్తూ వాటి పరిధిని వేరుగా ఉంచండి. ఒక తక్షణ-చిత్రం మ్యాప్ కోసం [3-పొర స్థిరత్వం చిత్రాన్ని](./docs/diagrams/exported/resilience-3layers.svg) చూడండి (మూలం: [docs/diagrams/resilience-3layers.mmd](./docs/diagrams/resilience-3layers.mmd)).
+OmniRouteకు మూడు సంబంధిత కానీ ప్రత్యేక తాత్కాలిక-పరాజయ యంత్రాంగాలు ఉన్నాయి. రూటింగ్ ప్రవర్తనను డీబగ్ చేస్తూ వాటి పరిధిని వేరుగా ఉంచండి. ఒక తక్షణ-చిత్రం మ్యాప్ కోసం [3-పొర స్థిరత్వం చిత్రాన్ని](./docs/diagrams/exported/resilience-3layers.svg) చూడండి (మూలం: [docs/diagrams/resilience-3layers.md](./docs/diagrams/resilience-3layers.md)).
 
 ### ప్రొవైడర్ సర్క్యూట్ బ్రేకర్
 
