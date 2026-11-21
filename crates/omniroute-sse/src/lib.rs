@@ -492,6 +492,17 @@ pub fn is_known_non_claude_stream_payload(parsed: &Value, event_type: &str) -> b
     false
 }
 
+/// Unwrap Cloud Code API Gemini envelope `{ response: { candidates: ... } }`
+/// when top-level `candidates` is absent.
+pub fn unwrap_gemini_chunk(parsed: &Value) -> Value {
+    if parsed.get("candidates").is_none() {
+        if let Some(Value::Object(resp)) = parsed.get("response") {
+            return Value::Object(resp.clone());
+        }
+    }
+    parsed.clone()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -688,5 +699,18 @@ mod tests {
             &json!({"foo":"bar"}),
             ""
         ));
+    }
+
+    #[test]
+    fn unwraps_gemini_envelope() {
+        let wrapped = json!({"response":{"candidates":[{"content":{"parts":[{"text":"hi"}]}}]}});
+        assert_eq!(
+            unwrap_gemini_chunk(&wrapped),
+            json!({"candidates":[{"content":{"parts":[{"text":"hi"}]}}]})
+        );
+        let plain = json!({"candidates":[{"content":{"parts":[{"text":"x"}]}}]});
+        assert_eq!(unwrap_gemini_chunk(&plain), plain);
+        let other = json!({"response":{"foo":1}});
+        assert_eq!(unwrap_gemini_chunk(&other), json!({"foo":1}));
     }
 }

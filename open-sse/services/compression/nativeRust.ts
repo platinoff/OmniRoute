@@ -31,6 +31,10 @@ type NativeBinding = {
   sseExtractDataLine?(line: string): string | null;
   sseParseLine?(line: string): string | null;
   sseFormatSse?(dataJson: string | null | undefined, sourceFormat?: string | null): string;
+  sseIsOpenaiChoicesPayload?(parsedJson: string): boolean;
+  sseHasOpenaiFinishReason?(parsedJson: string): boolean;
+  sseIsKnownNonClaudeStreamPayload?(parsedJson: string, eventType?: string | null): boolean;
+  sseUnwrapGeminiChunk?(parsedJson: string): string;
 };
 
 let cachedBinding: NativeBinding | null | undefined;
@@ -192,6 +196,34 @@ export function formatSseNative(data: unknown | null | undefined, sourceFormat?:
   if (typeof fn !== "function") throw new Error("native sseFormatSse not available (rebuild addon)");
   const payload = data === undefined || data === null ? null : JSON.stringify(data);
   return fn(payload, sourceFormat ?? null);
+}
+
+/** SSE: true when payload carries an OpenAI `choices` array. */
+export function isOpenaiChoicesPayloadNative(parsed: unknown): boolean {
+  const fn = binding().sseIsOpenaiChoicesPayload;
+  if (typeof fn !== "function") throw new Error("native sseIsOpenaiChoicesPayload not available (rebuild addon)");
+  return fn(JSON.stringify(parsed));
+}
+
+/** SSE: true when any OpenAI choice carries a non-null `finish_reason`. */
+export function hasOpenaiFinishReasonNative(parsed: unknown): boolean {
+  const fn = binding().sseHasOpenaiFinishReason;
+  if (typeof fn !== "function") throw new Error("native sseHasOpenaiFinishReason not available (rebuild addon)");
+  return fn(JSON.stringify(parsed));
+}
+
+/** SSE: true when payload is a known non-Claude stream payload with relevant value. */
+export function isKnownNonClaudeStreamPayloadNative(parsed: unknown, eventType?: string | null): boolean {
+  const fn = binding().sseIsKnownNonClaudeStreamPayload;
+  if (typeof fn !== "function") throw new Error("native sseIsKnownNonClaudeStreamPayload not available (rebuild addon)");
+  return fn(JSON.stringify(parsed), eventType ?? null);
+}
+
+/** SSE: unwrap Gemini envelope when top-level candidates are absent. */
+export function unwrapGeminiChunkNative(parsed: unknown): unknown {
+  const fn = binding().sseUnwrapGeminiChunk;
+  if (typeof fn !== "function") throw new Error("native sseUnwrapGeminiChunk not available (rebuild addon)");
+  return JSON.parse(fn(JSON.stringify(parsed))) as unknown;
 }
 
 /** Low-level access for advanced/experimental use. */

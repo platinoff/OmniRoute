@@ -18,11 +18,15 @@ import {
   extractSseDataLineNative,
   formatSseNative,
   getRustBridgeLoadError,
+  hasOpenaiFinishReasonNative,
   isCompressionExcludedNative,
+  isKnownNonClaudeStreamPayloadNative,
+  isOpenaiChoicesPayloadNative,
   isRustBridgeAvailable,
   parseSseDataPayloadNative,
   parseSseLineNative,
   stripAnsiCodesNative,
+  unwrapGeminiChunkNative,
   validateCompressionNative,
   validateRulePackNative,
 } from "../open-sse/services/compression/nativeRust.ts";
@@ -73,6 +77,17 @@ function main() {
   assert(extracted === "x", "sse extract mismatch");
   const frame = formatSseNative({ done: true }, null);
   assert(frame === "data: [DONE]\n\n", "sse format mismatch");
+  assert(isOpenaiChoicesPayloadNative({ choices: [] }) === true, "sse choices predicate mismatch");
+  assert(
+    hasOpenaiFinishReasonNative({ choices: [{ finish_reason: "stop" }] }) === true,
+    "sse finish reason mismatch"
+  );
+  assert(
+    isKnownNonClaudeStreamPayloadNative({ choices: [{ delta: { content: "hi" } }] }) === true,
+    "sse non-claude payload mismatch"
+  );
+  const unwrapped = unwrapGeminiChunkNative({ response: { candidates: [{ content: { parts: [{ text: "x" }] } }] } });
+  assert(JSON.stringify(unwrapped) === JSON.stringify({ candidates: [{ content: { parts: [{ text: "x" }] } }] }), "sse unwrap mismatch");
   console.log("sse_ok");
 
   console.log("CNV1_RUST_BRIDGE_SMOKE_OK");

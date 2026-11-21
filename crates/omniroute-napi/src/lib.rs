@@ -8,8 +8,9 @@ use omniroute_compression::{
 };
 use omniroute_gcf::{decode_generic, encode_generic, GenericOptions};
 use omniroute_sse::{
-    extract_sse_data_line, format_sse, parse_sse_data_lines, parse_sse_data_payload,
-    parse_sse_line, strip_ansi_codes,
+    extract_sse_data_line, format_sse, has_openai_finish_reason,
+    is_known_non_claude_stream_payload, is_openai_choices_payload, parse_sse_data_lines,
+    parse_sse_data_payload, parse_sse_line, strip_ansi_codes, unwrap_gemini_chunk,
 };
 use serde_json::Value;
 
@@ -157,4 +158,44 @@ pub fn sse_format_sse_js(
         Some(s) => Some(serde_json::from_str(&s).map_err(|e| err_msg("sseFormatSse parse", e))?),
     };
     Ok(format_sse(value.as_ref(), source_format.as_deref()))
+}
+
+/// True when payload JSON carries an OpenAI `choices` array.
+#[napi(js_name = "sseIsOpenaiChoicesPayload")]
+pub fn sse_is_openai_choices_payload_js(parsed_json: String) -> Result<bool> {
+    let value: Value = serde_json::from_str(&parsed_json)
+        .map_err(|e| err_msg("sseIsOpenaiChoicesPayload parse", e))?;
+    Ok(is_openai_choices_payload(&value))
+}
+
+/// True when any OpenAI choice carries a non-null `finish_reason`.
+#[napi(js_name = "sseHasOpenaiFinishReason")]
+pub fn sse_has_openai_finish_reason_js(parsed_json: String) -> Result<bool> {
+    let value: Value = serde_json::from_str(&parsed_json)
+        .map_err(|e| err_msg("sseHasOpenaiFinishReason parse", e))?;
+    Ok(has_openai_finish_reason(&value))
+}
+
+/// True when payload is a known non-Claude stream payload shape with relevant stream value.
+#[napi(js_name = "sseIsKnownNonClaudeStreamPayload")]
+pub fn sse_is_known_non_claude_stream_payload_js(
+    parsed_json: String,
+    event_type: Option<String>,
+) -> Result<bool> {
+    let value: Value = serde_json::from_str(&parsed_json)
+        .map_err(|e| err_msg("sseIsKnownNonClaudeStreamPayload parse", e))?;
+    Ok(is_known_non_claude_stream_payload(
+        &value,
+        event_type.as_deref().unwrap_or(""),
+    ))
+}
+
+/// Unwrap Cloud Code API Gemini envelope when top-level `candidates` is absent.
+/// Returns JSON string of the unwrapped (or original) value.
+#[napi(js_name = "sseUnwrapGeminiChunk")]
+pub fn sse_unwrap_gemini_chunk_js(parsed_json: String) -> Result<String> {
+    let value: Value =
+        serde_json::from_str(&parsed_json).map_err(|e| err_msg("sseUnwrapGeminiChunk parse", e))?;
+    let unwrapped = unwrap_gemini_chunk(&value);
+    serde_json::to_string(&unwrapped).map_err(|e| err_msg("sseUnwrapGeminiChunk stringify", e))
 }
