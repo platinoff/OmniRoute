@@ -23,6 +23,7 @@ import {
   isKnownNonClaudeStreamPayloadNative,
   isOpenaiChoicesPayloadNative,
   isRustBridgeAvailable,
+  normalizeSseLinesBatchNative,
   parseSseDataPayloadNative,
   parseSseLineNative,
   stripAnsiCodesNative,
@@ -88,6 +89,8 @@ function main() {
   );
   const unwrapped = unwrapGeminiChunkNative({ response: { candidates: [{ content: { parts: [{ text: "x" }] } }] } });
   assert(JSON.stringify(unwrapped) === JSON.stringify({ candidates: [{ content: { parts: [{ text: "x" }] } }] }), "sse unwrap mismatch");
+  const normalized = normalizeSseLinesBatchNative(["data: {\"a\":", "data: 1}", ""]);
+  assert(JSON.stringify(normalized) === JSON.stringify(["data: {\"a\":1}", ""]), "sse normalize batch mismatch");
   console.log("sse_ok");
 
   console.log("CNV1_RUST_BRIDGE_SMOKE_OK");

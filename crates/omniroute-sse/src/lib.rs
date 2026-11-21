@@ -267,6 +267,12 @@ impl SseDataLineNormalizer {
     }
 }
 
+/// Normalize SSE data lines in a single batch using a fresh normalizer.
+pub fn normalize_sse_data_lines(lines: &[String]) -> Vec<String> {
+    let mut normalizer = SseDataLineNormalizer::new();
+    normalizer.normalize(lines)
+}
+
 /// Stateful SSE event-prefix buffer (bounded port of `createSSEEventPrefixBuffer`).
 #[derive(Debug, Default, Clone)]
 pub struct SseEventPrefixBuffer {
@@ -712,5 +718,18 @@ mod tests {
         assert_eq!(unwrap_gemini_chunk(&plain), plain);
         let other = json!({"response":{"foo":1}});
         assert_eq!(unwrap_gemini_chunk(&other), json!({"foo":1}));
+    }
+
+    #[test]
+    fn normalizes_lines_in_batch() {
+        let lines = vec![
+            "data: {\"a\":".to_string(),
+            "data: 1}".to_string(),
+            "".to_string(),
+        ];
+        assert_eq!(
+            normalize_sse_data_lines(&lines),
+            vec!["data: {\"a\":1}".to_string(), "".to_string()]
+        );
     }
 }

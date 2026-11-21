@@ -20,6 +20,7 @@ Additive N-API bindings for OmniRoute Rust crates (`omniroute-gcf`, `omniroute-c
 - `sseHasOpenaiFinishReason(parsedJson: string): boolean`
 - `sseIsKnownNonClaudeStreamPayload(parsedJson: string, eventType?: string | null): boolean`
 - `sseUnwrapGeminiChunk(parsedJson: string): string` — returns JSON string of unwrapped/original value
+- `sseNormalizeLinesBatch(linesJson: string): string` — `linesJson`/result are JSON arrays of strings (single-batch, fresh normalizer)
 
 ## Build (local, opt-in)
 

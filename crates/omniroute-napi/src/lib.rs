@@ -9,8 +9,9 @@ use omniroute_compression::{
 use omniroute_gcf::{decode_generic, encode_generic, GenericOptions};
 use omniroute_sse::{
     extract_sse_data_line, format_sse, has_openai_finish_reason,
-    is_known_non_claude_stream_payload, is_openai_choices_payload, parse_sse_data_lines,
-    parse_sse_data_payload, parse_sse_line, strip_ansi_codes, unwrap_gemini_chunk,
+    is_known_non_claude_stream_payload, is_openai_choices_payload, normalize_sse_data_lines,
+    parse_sse_data_lines, parse_sse_data_payload, parse_sse_line, strip_ansi_codes,
+    unwrap_gemini_chunk,
 };
 use serde_json::Value;
 
@@ -198,4 +199,14 @@ pub fn sse_unwrap_gemini_chunk_js(parsed_json: String) -> Result<String> {
         serde_json::from_str(&parsed_json).map_err(|e| err_msg("sseUnwrapGeminiChunk parse", e))?;
     let unwrapped = unwrap_gemini_chunk(&value);
     serde_json::to_string(&unwrapped).map_err(|e| err_msg("sseUnwrapGeminiChunk stringify", e))
+}
+
+/// Normalize SSE lines in a single batch (fresh normalizer). `lines_json` is a JSON array of strings.
+/// Returns JSON array of normalized output lines.
+#[napi(js_name = "sseNormalizeLinesBatch")]
+pub fn sse_normalize_lines_batch_js(lines_json: String) -> Result<String> {
+    let lines: Vec<String> = serde_json::from_str(&lines_json)
+        .map_err(|e| err_msg("sseNormalizeLinesBatch parse", e))?;
+    let out = normalize_sse_data_lines(&lines);
+    serde_json::to_string(&out).map_err(|e| err_msg("sseNormalizeLinesBatch stringify", e))
 }

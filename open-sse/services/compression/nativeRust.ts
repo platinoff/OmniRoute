@@ -35,6 +35,7 @@ type NativeBinding = {
   sseHasOpenaiFinishReason?(parsedJson: string): boolean;
   sseIsKnownNonClaudeStreamPayload?(parsedJson: string, eventType?: string | null): boolean;
   sseUnwrapGeminiChunk?(parsedJson: string): string;
+  sseNormalizeLinesBatch?(linesJson: string): string;
 };
 
 let cachedBinding: NativeBinding | null | undefined;
@@ -224,6 +225,13 @@ export function unwrapGeminiChunkNative(parsed: unknown): unknown {
   const fn = binding().sseUnwrapGeminiChunk;
   if (typeof fn !== "function") throw new Error("native sseUnwrapGeminiChunk not available (rebuild addon)");
   return JSON.parse(fn(JSON.stringify(parsed))) as unknown;
+}
+
+/** SSE: normalize lines in a single batch (fresh normalizer). */
+export function normalizeSseLinesBatchNative(lines: string[]): string[] {
+  const fn = binding().sseNormalizeLinesBatch;
+  if (typeof fn !== "function") throw new Error("native sseNormalizeLinesBatch not available (rebuild addon)");
+  return JSON.parse(fn(JSON.stringify(lines))) as string[];
 }
 
 /** Low-level access for advanced/experimental use. */
