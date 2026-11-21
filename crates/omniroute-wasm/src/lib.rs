@@ -650,3 +650,22 @@ pub fn compression_ensure_reasoning_content_on_tool_calls(
     serde_json::to_string(&out)
         .map_err(|e| js_err("compressionEnsureReasoningContentOnToolCalls stringify", e))
 }
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionExtractReasoningContent)]
+pub fn compression_extract_reasoning_content(
+    message_json: String,
+) -> Result<Option<String>, JsValue> {
+    let value: serde_json::Value = serde_json::from_str(&message_json)
+        .map_err(|e| js_err("compressionExtractReasoningContent parse", e))?;
+    Ok(omniroute_compression::extract_reasoning_content(&value).map(ToString::to_string))
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionDropReasoningContent)]
+pub fn compression_drop_reasoning_content(message_json: String) -> Result<String, JsValue> {
+    let value: serde_json::Value = serde_json::from_str(&message_json)
+        .map_err(|e| js_err("compressionDropReasoningContent parse", e))?;
+    let out = omniroute_compression::drop_reasoning_content(&value);
+    serde_json::to_string(&out).map_err(|e| js_err("compressionDropReasoningContent stringify", e))
+}

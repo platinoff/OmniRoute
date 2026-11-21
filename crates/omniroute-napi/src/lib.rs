@@ -6,14 +6,15 @@ use napi_derive::napi;
 use omniroute_compression::{
     apply_caveman_output_mode, back_off_to_word_boundary, build_caveman_output_instruction,
     collapse_newline_runs, collapse_whitespace, compress_tool_results, compression_ratio,
-    compression_savings, dedup_system_prompt, detect_compression_language,
+    compression_savings, dedup_system_prompt, detect_compression_language, drop_reasoning_content,
     ensure_reasoning_content_on_tool_calls, estimate_token_savings, estimate_tokens,
-    extract_text_content, has_non_empty_reasoning_content, is_compression_excluded, is_text_block,
-    list_supported_compression_languages, normalize_message_whitespace, prune_by_score,
-    remove_redundant_content, replace_image_urls, replace_text_content, score_token,
-    should_bypass_caveman_output_mode, trim_trailing_horizontal_whitespace, truncate_tool_content,
-    validate_compression, validate_rule_pack, BodyTransformResult, CavemanOutputIntensity,
-    CavemanOutputModeConfig, CompressionExclusions, LiteCompressionOptions,
+    extract_reasoning_content, extract_text_content, has_non_empty_reasoning_content,
+    is_compression_excluded, is_text_block, list_supported_compression_languages,
+    normalize_message_whitespace, prune_by_score, remove_redundant_content, replace_image_urls,
+    replace_text_content, score_token, should_bypass_caveman_output_mode,
+    trim_trailing_horizontal_whitespace, truncate_tool_content, validate_compression,
+    validate_rule_pack, BodyTransformResult, CavemanOutputIntensity, CavemanOutputModeConfig,
+    CompressionExclusions, LiteCompressionOptions,
 };
 use omniroute_gcf::{decode_generic, encode_generic, GenericOptions};
 use omniroute_sse::{
@@ -592,6 +593,23 @@ pub fn compression_ensure_reasoning_content_on_tool_calls_js(
     let out = ensure_reasoning_content_on_tool_calls(&value);
     serde_json::to_string(&out)
         .map_err(|e| err_msg("compressionEnsureReasoningContentOnToolCalls stringify", e))
+}
+
+/// Extract `reasoning_content` string from a message JSON object, or null.
+#[napi(js_name = "compressionExtractReasoningContent")]
+pub fn compression_extract_reasoning_content_js(message_json: String) -> Result<Option<String>> {
+    let value: Value = serde_json::from_str(&message_json)
+        .map_err(|e| err_msg("compressionExtractReasoningContent parse", e))?;
+    Ok(extract_reasoning_content(&value).map(ToString::to_string))
+}
+
+/// Drop `reasoning_content` from a message JSON object. Returns JSON string.
+#[napi(js_name = "compressionDropReasoningContent")]
+pub fn compression_drop_reasoning_content_js(message_json: String) -> Result<String> {
+    let value: Value = serde_json::from_str(&message_json)
+        .map_err(|e| err_msg("compressionDropReasoningContent parse", e))?;
+    let out = drop_reasoning_content(&value);
+    serde_json::to_string(&out).map_err(|e| err_msg("compressionDropReasoningContent stringify", e))
 }
 
 /// Stateful SSE event-prefix buffer (opt-in wrapper).

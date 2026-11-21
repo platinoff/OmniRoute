@@ -37,6 +37,8 @@ import {
   compressionSavingsNative,
   compressionHasNonEmptyReasoningContentNative,
   compressionEnsureReasoningContentOnToolCallsNative,
+  compressionExtractReasoningContentNative,
+  compressionDropReasoningContentNative,
   compressionScoreTokenNative,
   compressionShouldBypassCavemanOutputModeNative,
   compressionTrimTrailingHorizontalWhitespaceNative,
@@ -250,6 +252,10 @@ function main() {
     { role: "assistant", tool_calls: [{ id: "1" }], content: null },
   ]);
   assert(Array.isArray(ensured) && ensured[0].reasoning_content === "", "reasoning ensure mismatch");
+  assert(compressionExtractReasoningContentNative({ reasoning_content: "hi" }) === "hi", "reasoning extract mismatch");
+  assert(compressionExtractReasoningContentNative({}) === null, "reasoning extract null mismatch");
+  const dropped = compressionDropReasoningContentNative({ reasoning_content: "x", content: "y" });
+  assert(dropped.reasoning_content === undefined && dropped.content === "y", "reasoning drop mismatch");
   console.log("compression_reasoning_ok");
 
   console.log("CNV1_RUST_BRIDGE_SMOKE_OK");

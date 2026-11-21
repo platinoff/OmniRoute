@@ -111,6 +111,8 @@ type NativeBinding = {
   // Reasoning-field helpers (W25+, opt-in)
   compressionHasNonEmptyReasoningContent?(messageJson: string): boolean;
   compressionEnsureReasoningContentOnToolCalls?(messagesJson: string): string;
+  compressionExtractReasoningContent?(messageJson: string): string | null;
+  compressionDropReasoningContent?(messageJson: string): string;
 };
 
 let cachedBinding: NativeBinding | null | undefined;
@@ -565,6 +567,20 @@ export function compressionEnsureReasoningContentOnToolCallsNative(messages: unk
   if (typeof fn !== "function")
     throw new Error("native compressionEnsureReasoningContentOnToolCalls not available (rebuild addon)");
   return JSON.parse(fn(JSON.stringify(messages))) as unknown;
+}
+
+export function compressionExtractReasoningContentNative(message: unknown): string | null {
+  const fn = binding().compressionExtractReasoningContent;
+  if (typeof fn !== "function")
+    throw new Error("native compressionExtractReasoningContent not available (rebuild addon)");
+  return fn(JSON.stringify(message));
+}
+
+export function compressionDropReasoningContentNative(message: unknown): unknown {
+  const fn = binding().compressionDropReasoningContent;
+  if (typeof fn !== "function")
+    throw new Error("native compressionDropReasoningContent not available (rebuild addon)");
+  return JSON.parse(fn(JSON.stringify(message))) as unknown;
 }
 
 /** Low-level access for advanced/experimental use. */
