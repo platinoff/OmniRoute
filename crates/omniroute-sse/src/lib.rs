@@ -335,6 +335,163 @@ impl SseEventPrefixBuffer {
     }
 }
 
+fn value_is_record(value: &Value) -> bool {
+    matches!(value, Value::Object(_))
+}
+
+/// True when payload carries an OpenAI `choices` array (shape marker).
+pub fn is_openai_choices_payload(parsed: &Value) -> bool {
+    matches!(parsed.get("choices"), Some(Value::Array(_)))
+}
+
+/// True when any OpenAI choice carries a non-null `finish_reason`.
+pub fn has_openai_finish_reason(parsed: &Value) -> bool {
+    let Some(Value::Array(choices)) = parsed.get("choices") else {
+        return false;
+    };
+    choices.iter().any(|choice| {
+        let Value::Object(c) = choice else {
+            return false;
+        };
+        !matches!(c.get("finish_reason"), None | Some(Value::Null))
+    })
+}
+
+fn has_openai_compatible_stream_value(parsed: &Value) -> bool {
+    let Some(Value::Array(choices)) = parsed.get("choices") else {
+        return false;
+    };
+    choices.iter().any(|choice| {
+        let Value::Object(c) = choice else {
+            return false;
+        };
+        let Some(Value::Object(delta)) = c.get("delta") else {
+            return false;
+        };
+        if matches!(delta.get("content"), Some(Value::String(s)) if !s.is_empty()) {
+            return true;
+        }
+        if matches!(delta.get("reasoning_content"), Some(Value::String(s)) if !s.is_empty()) {
+            return true;
+        }
+        if matches!(delta.get("reasoning_text"), Some(Value::String(s)) if !s.is_empty()) {
+            return true;
+        }
+        matches!(delta.get("tool_calls"), Some(Value::Array(arr)) if !arr.is_empty())
+    })
+}
+
+fn has_responses_stream_value(parsed: &Value, event_type: &str) -> bool {
+    let ty = parsed
+        .get("type")
+        .and_then(|v| v.as_str())
+        .unwrap_or(event_type);
+    if !ty.starts_with("response.") {
+        return false;
+    }
+
+    match ty {
+        "response.output_text.delta"
+        | "response.reasoning_text.delta"
+        | "response.reasoning_summary_text.delta"
+        | "response.function_call_arguments.delta" => {
+            matches!(parsed.get("delta"), Some(Value::String(s)) if !s.is_empty())
+                || matches!(parsed.get("text"), Some(Value::String(s)) if !s.is_empty())
+                || matches!(parsed.get("arguments"), Some(Value::String(s)) if !s.is_empty())
+        }
+        "response.output_item.added" | "response.output_item.done" => {
+            matches!(parsed.get("item"), Some(v) if value_is_record(v))
+        }
+        "response.content_part.added" => {
+            matches!(parsed.get("part"), Some(v) if value_is_record(v))
+        }
+        "response.completed" => {
+            if let Some(Value::Object(resp)) = parsed.get("response") {
+                matches!(resp.get("output"), Some(Value::Array(arr)) if !arr.is_empty())
+            } else {
+                false
+            }
+        }
+        _ => false,
+    }
+}
+
+fn has_gemini_candidate_stream_value(parsed: &Value) -> bool {
+    let candidates: &Vec<Value> = if let Some(Value::Array(arr)) = parsed.get("candidates") {
+        arr
+    } else if let Some(Value::Object(resp)) = parsed.get("response") {
+        if let Some(Value::Array(arr)) = resp.get("candidates") {
+            arr
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    };
+
+    candidates.iter().any(|candidate| {
+        let Value::Object(c) = candidate else {
+            return false;
+        };
+        let parts = if let Some(Value::Object(content)) = c.get("content") {
+            if let Some(Value::Array(parts)) = content.get("parts") {
+                parts
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        };
+        parts.iter().any(|part| {
+            let Value::Object(p) = part else {
+                return false;
+            };
+            if matches!(p.get("text"), Some(Value::String(s)) if !s.is_empty()) {
+                return true;
+            }
+            value_is_record(p.get("functionCall").unwrap_or(&Value::Null))
+                || value_is_record(p.get("executableCode").unwrap_or(&Value::Null))
+        })
+    })
+}
+
+/// True when payload is a known non-Claude stream payload shape with relevant stream value.
+pub fn is_known_non_claude_stream_payload(parsed: &Value, event_type: &str) -> bool {
+    if parsed.get("choices").is_some() {
+        if is_openai_choices_payload(parsed) {
+            return has_openai_compatible_stream_value(parsed);
+        }
+        return false;
+    }
+
+    if let Some(Value::String(object_type)) = parsed.get("object") {
+        if object_type == "chat.completion.chunk"
+            || object_type == "text_completion"
+            || object_type.ends_with(".completion.chunk")
+        {
+            return has_openai_compatible_stream_value(parsed);
+        }
+    }
+
+    let ty = parsed
+        .get("type")
+        .and_then(|v| v.as_str())
+        .unwrap_or(event_type);
+    if ty.starts_with("response.") {
+        return has_responses_stream_value(parsed, event_type);
+    }
+    if matches!(parsed.get("candidates"), Some(Value::Array(_))) {
+        return has_gemini_candidate_stream_value(parsed);
+    }
+
+    if let Some(Value::Object(resp)) = parsed.get("response") {
+        if matches!(resp.get("candidates"), Some(Value::Array(_))) {
+            return has_gemini_candidate_stream_value(parsed);
+        }
+    }
+    false
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -493,5 +650,43 @@ mod tests {
         assert_eq!(again, "data: {\"y\":2}\n\n");
         b.clear();
         assert_eq!(b.flush(), "");
+    }
+
+    #[test]
+    fn stream_payload_predicates() {
+        assert!(is_openai_choices_payload(&json!({"choices": []})));
+        assert!(!is_openai_choices_payload(&json!({"object": "x"})));
+
+        assert!(has_openai_finish_reason(&json!({
+            "choices": [{"finish_reason": "stop"}]
+        })));
+        assert!(!has_openai_finish_reason(&json!({
+            "choices": [{"finish_reason": null}]
+        })));
+
+        assert!(is_known_non_claude_stream_payload(
+            &json!({"choices":[{"delta":{"content":"hi"}}]}),
+            ""
+        ));
+        assert!(!is_known_non_claude_stream_payload(
+            &json!({"choices":[{"delta":{"content":""}}]}),
+            ""
+        ));
+        assert!(is_known_non_claude_stream_payload(
+            &json!({"type":"response.output_text.delta","delta":"hi"}),
+            ""
+        ));
+        assert!(is_known_non_claude_stream_payload(
+            &json!({"candidates":[{"content":{"parts":[{"text":"hi"}]}}]}),
+            ""
+        ));
+        assert!(is_known_non_claude_stream_payload(
+            &json!({"response":{"candidates":[{"content":{"parts":[{"functionCall":{"name":"x"}}]}}]}}),
+            ""
+        ));
+        assert!(!is_known_non_claude_stream_payload(
+            &json!({"foo":"bar"}),
+            ""
+        ));
     }
 }
