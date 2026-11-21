@@ -56,6 +56,27 @@ pub fn ensure_reasoning_content_on_tool_calls(messages: &Value) -> Value {
     )
 }
 
+/// Extract `reasoning_content` as string when present.
+#[must_use]
+pub fn extract_reasoning_content(message: &Value) -> Option<&str> {
+    message.get("reasoning_content").and_then(Value::as_str)
+}
+
+/// Return message without `reasoning_content` field.
+/// Non-object values are returned unchanged.
+#[must_use]
+pub fn drop_reasoning_content(message: &Value) -> Value {
+    let Some(obj) = message.as_object() else {
+        return message.clone();
+    };
+    if !obj.contains_key("reasoning_content") {
+        return message.clone();
+    }
+    let mut out = obj.clone();
+    out.remove("reasoning_content");
+    Value::Object(out)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -103,5 +124,32 @@ mod tests {
         let input = json!([{"role":"assistant","tool_calls":[] }]);
         let out = ensure_reasoning_content_on_tool_calls(&input);
         assert!(out[0].get("reasoning_content").is_none());
+    }
+
+    #[test]
+    fn extract_reasoning_content_cases() {
+        assert_eq!(extract_reasoning_content(&json!({})), None);
+        assert_eq!(
+            extract_reasoning_content(&json!({"reasoning_content": 1})),
+            None
+        );
+        assert_eq!(
+            extract_reasoning_content(&json!({"reasoning_content": "hi"})),
+            Some("hi")
+        );
+    }
+
+    #[test]
+    fn drop_reasoning_content_cases() {
+        let m = json!({"role":"assistant","reasoning_content":"x","content":"y"});
+        let out = drop_reasoning_content(&m);
+        assert!(out.get("reasoning_content").is_none());
+        assert_eq!(out["content"], "y");
+        assert_eq!(
+            drop_reasoning_content(&json!("not-object")),
+            json!("not-object")
+        );
+        let no_rc = json!({"role":"user"});
+        assert_eq!(drop_reasoning_content(&no_rc), no_rc);
     }
 }

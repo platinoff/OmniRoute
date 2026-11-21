@@ -52,7 +52,8 @@ pub use output_mode::{
 };
 pub use preservation::{extract_fenced_code_blocks, find_fenced_code_blocks};
 pub use reasoning_fields::{
-    ensure_reasoning_content_on_tool_calls, has_non_empty_reasoning_content,
+    drop_reasoning_content, ensure_reasoning_content_on_tool_calls, extract_reasoning_content,
+    has_non_empty_reasoning_content,
 };
 pub use stats::{
     compression_ratio, compression_savings, estimate_token_savings, estimate_tokens,
