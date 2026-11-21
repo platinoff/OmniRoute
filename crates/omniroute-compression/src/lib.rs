@@ -4,10 +4,12 @@
 //! compression validation, and caveman rule pack validation/metadata/selectors.
 //! Wave 17+: portable core helpers (message content, language detection, ultra heuristics).
 //! Wave 19+: output-mode primitives and lite text helpers.
+//! Wave 21+: lite body-level transforms.
 
 pub mod caveman_rules;
 pub mod exclusions;
 pub mod language_detector;
+pub mod lite_body;
 pub mod lite_text;
 pub mod message_content;
 pub mod output_mode;
@@ -28,6 +30,10 @@ pub use exclusions::{
     normalize_compression_exclusions_strings, CompressionExclusions,
 };
 pub use language_detector::{detect_compression_language, list_supported_compression_languages};
+pub use lite_body::{
+    collapse_whitespace, compress_tool_results, dedup_system_prompt, remove_redundant_content,
+    replace_image_urls, BodyTransformResult, LiteCompressionOptions,
+};
 pub use lite_text::{
     back_off_to_word_boundary, collapse_newline_runs, normalize_message_whitespace,
     trim_trailing_horizontal_whitespace, truncate_tool_content, TOOL_TRUNCATION_LOOKBACK,
