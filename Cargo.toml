@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "crates/omniroute-gcf",
     "crates/omniroute-compression",
+    "crates/omniroute-sse",
     "crates/omniroute-napi",
 ]
 
