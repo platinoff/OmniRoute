@@ -35,6 +35,8 @@ import {
   compressionEstimateTokenSavingsNative,
   compressionRatioNative,
   compressionSavingsNative,
+  compressionHasNonEmptyReasoningContentNative,
+  compressionEnsureReasoningContentOnToolCallsNative,
   compressionScoreTokenNative,
   compressionShouldBypassCavemanOutputModeNative,
   compressionTrimTrailingHorizontalWhitespaceNative,
@@ -240,6 +242,15 @@ function main() {
   assert(savings.originalChars === 8 && savings.compressedChars === 4, "stats chars mismatch");
   assert(savings.savedTokensEst === 1, "stats saved tokens mismatch");
   console.log("compression_stats_ok");
+
+  // Reasoning-field helpers (W25+, opt-in)
+  assert(compressionHasNonEmptyReasoningContentNative({ reasoning_content: "hi" }) === true, "reasoning has mismatch");
+  assert(compressionHasNonEmptyReasoningContentNative({ reasoning_content: "" }) === false, "reasoning empty mismatch");
+  const ensured = compressionEnsureReasoningContentOnToolCallsNative([
+    { role: "assistant", tool_calls: [{ id: "1" }], content: null },
+  ]);
+  assert(Array.isArray(ensured) && ensured[0].reasoning_content === "", "reasoning ensure mismatch");
+  console.log("compression_reasoning_ok");
 
   console.log("CNV1_RUST_BRIDGE_SMOKE_OK");
 }

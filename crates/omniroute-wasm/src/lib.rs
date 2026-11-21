@@ -626,3 +626,27 @@ pub fn compression_savings_json(original: String, compressed: String) -> Result<
     });
     serde_json::to_string(&out).map_err(|e| js_err("compressionSavingsJson stringify", e))
 }
+
+// ---------- Reasoning-field helpers (W25+, opt-in) ----------
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionHasNonEmptyReasoningContent)]
+pub fn compression_has_non_empty_reasoning_content(message_json: String) -> Result<bool, JsValue> {
+    let value: serde_json::Value = serde_json::from_str(&message_json)
+        .map_err(|e| js_err("compressionHasNonEmptyReasoningContent parse", e))?;
+    Ok(omniroute_compression::has_non_empty_reasoning_content(
+        &value,
+    ))
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionEnsureReasoningContentOnToolCalls)]
+pub fn compression_ensure_reasoning_content_on_tool_calls(
+    messages_json: String,
+) -> Result<String, JsValue> {
+    let value: serde_json::Value = serde_json::from_str(&messages_json)
+        .map_err(|e| js_err("compressionEnsureReasoningContentOnToolCalls parse", e))?;
+    let out = omniroute_compression::ensure_reasoning_content_on_tool_calls(&value);
+    serde_json::to_string(&out)
+        .map_err(|e| js_err("compressionEnsureReasoningContentOnToolCalls stringify", e))
+}

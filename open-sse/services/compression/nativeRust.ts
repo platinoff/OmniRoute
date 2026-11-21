@@ -108,6 +108,9 @@ type NativeBinding = {
   compressionEstimateTokenSavings?(original: string, compressed: string): number;
   compressionRatio?(original: string, compressed: string): number;
   compressionSavingsJson?(original: string, compressed: string): string;
+  // Reasoning-field helpers (W25+, opt-in)
+  compressionHasNonEmptyReasoningContent?(messageJson: string): boolean;
+  compressionEnsureReasoningContentOnToolCalls?(messagesJson: string): string;
 };
 
 let cachedBinding: NativeBinding | null | undefined;
@@ -546,6 +549,22 @@ export function compressionSavingsNative(original: string, compressed: string): 
   const fn = binding().compressionSavingsJson;
   if (typeof fn !== "function") throw new Error("native compressionSavingsJson not available (rebuild addon)");
   return JSON.parse(fn(original, compressed)) as NativeCompressionSavings;
+}
+
+// ---------- Reasoning-field helpers (W25+, opt-in) ----------
+
+export function compressionHasNonEmptyReasoningContentNative(message: unknown): boolean {
+  const fn = binding().compressionHasNonEmptyReasoningContent;
+  if (typeof fn !== "function")
+    throw new Error("native compressionHasNonEmptyReasoningContent not available (rebuild addon)");
+  return fn(JSON.stringify(message));
+}
+
+export function compressionEnsureReasoningContentOnToolCallsNative(messages: unknown): unknown {
+  const fn = binding().compressionEnsureReasoningContentOnToolCalls;
+  if (typeof fn !== "function")
+    throw new Error("native compressionEnsureReasoningContentOnToolCalls not available (rebuild addon)");
+  return JSON.parse(fn(JSON.stringify(messages))) as unknown;
 }
 
 /** Low-level access for advanced/experimental use. */

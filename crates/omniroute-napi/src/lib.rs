@@ -6,8 +6,9 @@ use napi_derive::napi;
 use omniroute_compression::{
     apply_caveman_output_mode, back_off_to_word_boundary, build_caveman_output_instruction,
     collapse_newline_runs, collapse_whitespace, compress_tool_results, compression_ratio,
-    compression_savings, dedup_system_prompt, detect_compression_language, estimate_token_savings,
-    estimate_tokens, extract_text_content, is_compression_excluded, is_text_block,
+    compression_savings, dedup_system_prompt, detect_compression_language,
+    ensure_reasoning_content_on_tool_calls, estimate_token_savings, estimate_tokens,
+    extract_text_content, has_non_empty_reasoning_content, is_compression_excluded, is_text_block,
     list_supported_compression_languages, normalize_message_whitespace, prune_by_score,
     remove_redundant_content, replace_image_urls, replace_text_content, score_token,
     should_bypass_caveman_output_mode, trim_trailing_horizontal_whitespace, truncate_tool_content,
@@ -568,6 +569,29 @@ pub fn compression_savings_json_js(original: String, compressed: String) -> Resu
         "savedTokensEst": s.saved_tokens_est,
     });
     serde_json::to_string(&out).map_err(|e| err_msg("compressionSavingsJson stringify", e))
+}
+
+// ---------- Reasoning-field helpers (W25+, opt-in) ----------
+
+/// True when `message.reasoning_content` is a non-empty string.
+#[napi(js_name = "compressionHasNonEmptyReasoningContent")]
+pub fn compression_has_non_empty_reasoning_content_js(message_json: String) -> Result<bool> {
+    let value: Value = serde_json::from_str(&message_json)
+        .map_err(|e| err_msg("compressionHasNonEmptyReasoningContent parse", e))?;
+    Ok(has_non_empty_reasoning_content(&value))
+}
+
+/// Ensure assistant tool-call messages carry `reasoning_content` (set to "" if missing).
+/// `messages_json` must be a JSON array.
+#[napi(js_name = "compressionEnsureReasoningContentOnToolCalls")]
+pub fn compression_ensure_reasoning_content_on_tool_calls_js(
+    messages_json: String,
+) -> Result<String> {
+    let value: Value = serde_json::from_str(&messages_json)
+        .map_err(|e| err_msg("compressionEnsureReasoningContentOnToolCalls parse", e))?;
+    let out = ensure_reasoning_content_on_tool_calls(&value);
+    serde_json::to_string(&out)
+        .map_err(|e| err_msg("compressionEnsureReasoningContentOnToolCalls stringify", e))
 }
 
 /// Stateful SSE event-prefix buffer (opt-in wrapper).
