@@ -592,3 +592,37 @@ pub fn compression_replace_image_urls(
         supports_vision,
     ))
 }
+
+// ---------- Compression stats / token-estimation (W23+, opt-in) ----------
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionEstimateTokens)]
+pub fn compression_estimate_tokens(text: String) -> u32 {
+    omniroute_compression::estimate_tokens(&text) as u32
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionEstimateTokenSavings)]
+pub fn compression_estimate_token_savings(original: String, compressed: String) -> u32 {
+    omniroute_compression::estimate_token_savings(&original, &compressed) as u32
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionRatio)]
+pub fn compression_ratio(original: String, compressed: String) -> f64 {
+    omniroute_compression::compression_ratio(&original, &compressed)
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionSavingsJson)]
+pub fn compression_savings_json(original: String, compressed: String) -> Result<String, JsValue> {
+    let s = omniroute_compression::compression_savings(&original, &compressed);
+    let out = serde_json::json!({
+        "originalChars": s.original_chars,
+        "compressedChars": s.compressed_chars,
+        "originalTokensEst": s.original_tokens_est,
+        "compressedTokensEst": s.compressed_tokens_est,
+        "savedTokensEst": s.saved_tokens_est,
+    });
+    serde_json::to_string(&out).map_err(|e| js_err("compressionSavingsJson stringify", e))
+}

@@ -103,6 +103,11 @@ type NativeBinding = {
     supportsVision?: boolean | null
   ): string;
   compressionReplaceImageUrls?(bodyJson: string, supportsVision?: boolean | null): string;
+  // Compression stats / token-estimation (W23+, opt-in)
+  compressionEstimateTokens?(text: string): number;
+  compressionEstimateTokenSavings?(original: string, compressed: string): number;
+  compressionRatio?(original: string, compressed: string): number;
+  compressionSavingsJson?(original: string, compressed: string): string;
 };
 
 let cachedBinding: NativeBinding | null | undefined;
@@ -506,6 +511,41 @@ export function compressionReplaceImageUrlsNative(
   const fn = binding().compressionReplaceImageUrls;
   if (typeof fn !== "function") throw new Error("native compressionReplaceImageUrls not available (rebuild addon)");
   return JSON.parse(fn(JSON.stringify(body), supportsVision ?? null)) as NativeBodyTransformResult;
+}
+
+// ---------- Compression stats / token-estimation (W23+, opt-in) ----------
+
+export interface NativeCompressionSavings {
+  originalChars: number;
+  compressedChars: number;
+  originalTokensEst: number;
+  compressedTokensEst: number;
+  savedTokensEst: number;
+}
+
+export function compressionEstimateTokensNative(text: string): number {
+  const fn = binding().compressionEstimateTokens;
+  if (typeof fn !== "function") throw new Error("native compressionEstimateTokens not available (rebuild addon)");
+  return fn(text);
+}
+
+export function compressionEstimateTokenSavingsNative(original: string, compressed: string): number {
+  const fn = binding().compressionEstimateTokenSavings;
+  if (typeof fn !== "function")
+    throw new Error("native compressionEstimateTokenSavings not available (rebuild addon)");
+  return fn(original, compressed);
+}
+
+export function compressionRatioNative(original: string, compressed: string): number {
+  const fn = binding().compressionRatio;
+  if (typeof fn !== "function") throw new Error("native compressionRatio not available (rebuild addon)");
+  return fn(original, compressed);
+}
+
+export function compressionSavingsNative(original: string, compressed: string): NativeCompressionSavings {
+  const fn = binding().compressionSavingsJson;
+  if (typeof fn !== "function") throw new Error("native compressionSavingsJson not available (rebuild addon)");
+  return JSON.parse(fn(original, compressed)) as NativeCompressionSavings;
 }
 
 /** Low-level access for advanced/experimental use. */

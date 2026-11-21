@@ -5,8 +5,9 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use omniroute_compression::{
     apply_caveman_output_mode, back_off_to_word_boundary, build_caveman_output_instruction,
-    collapse_newline_runs, collapse_whitespace, compress_tool_results, dedup_system_prompt,
-    detect_compression_language, extract_text_content, is_compression_excluded, is_text_block,
+    collapse_newline_runs, collapse_whitespace, compress_tool_results, compression_ratio,
+    compression_savings, dedup_system_prompt, detect_compression_language, estimate_token_savings,
+    estimate_tokens, extract_text_content, is_compression_excluded, is_text_block,
     list_supported_compression_languages, normalize_message_whitespace, prune_by_score,
     remove_redundant_content, replace_image_urls, replace_text_content, score_token,
     should_bypass_caveman_output_mode, trim_trailing_horizontal_whitespace, truncate_tool_content,
@@ -533,6 +534,40 @@ pub fn compression_replace_image_urls_js(
     let body: Value = serde_json::from_str(&body_json)
         .map_err(|e| err_msg("compressionReplaceImageUrls parse", e))?;
     body_transform_json(replace_image_urls(&body, supports_vision))
+}
+
+// ---------- Compression stats / token-estimation (W23+, opt-in) ----------
+
+/// Estimate token count (UTF-16 code units, ceil(len/4) parity with JS heuristics).
+#[napi(js_name = "compressionEstimateTokens")]
+pub fn compression_estimate_tokens_js(text: String) -> u32 {
+    estimate_tokens(&text) as u32
+}
+
+/// Estimated token savings: max(0, estimate_tokens(original) - estimate_tokens(compressed)).
+#[napi(js_name = "compressionEstimateTokenSavings")]
+pub fn compression_estimate_token_savings_js(original: String, compressed: String) -> u32 {
+    estimate_token_savings(&original, &compressed) as u32
+}
+
+/// Compression ratio (compressed/original) over UTF-16 units; 1.0 when original is empty.
+#[napi(js_name = "compressionRatio")]
+pub fn compression_ratio_js(original: String, compressed: String) -> f64 {
+    compression_ratio(&original, &compressed)
+}
+
+/// Lightweight compression savings stats. Returns JSON string.
+#[napi(js_name = "compressionSavingsJson")]
+pub fn compression_savings_json_js(original: String, compressed: String) -> Result<String> {
+    let s = compression_savings(&original, &compressed);
+    let out = serde_json::json!({
+        "originalChars": s.original_chars,
+        "compressedChars": s.compressed_chars,
+        "originalTokensEst": s.original_tokens_est,
+        "compressedTokensEst": s.compressed_tokens_est,
+        "savedTokensEst": s.saved_tokens_est,
+    });
+    serde_json::to_string(&out).map_err(|e| err_msg("compressionSavingsJson stringify", e))
 }
 
 /// Stateful SSE event-prefix buffer (opt-in wrapper).

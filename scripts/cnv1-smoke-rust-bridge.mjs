@@ -31,6 +31,10 @@ import {
   compressionRemoveRedundantContentNative,
   compressionReplaceImageUrlsNative,
   compressionReplaceTextContentNative,
+  compressionEstimateTokensNative,
+  compressionEstimateTokenSavingsNative,
+  compressionRatioNative,
+  compressionSavingsNative,
   compressionScoreTokenNative,
   compressionShouldBypassCavemanOutputModeNative,
   compressionTrimTrailingHorizontalWhitespaceNative,
@@ -225,6 +229,17 @@ function main() {
   assert(replacedImgs.body?.messages?.[0]?.content?.[1]?.type === "text", "lite body image replace type mismatch");
   assert(replacedImgs.body?.messages?.[0]?.content?.[1]?.text === "[image: png]", "lite body image replace text mismatch");
   console.log("compression_lite_body_ok");
+
+  // Compression stats / token-estimation (W23+, opt-in)
+  assert(compressionEstimateTokensNative("") === 0, "stats empty tokens mismatch");
+  assert(compressionEstimateTokensNative("abcde") === 2, "stats token estimate mismatch");
+  assert(compressionEstimateTokenSavingsNative("abcdefgh", "abcd") === 1, "stats savings mismatch");
+  const ratio = compressionRatioNative("abcdefgh", "abcd");
+  assert(Math.abs(ratio - 0.5) < 1e-9, "stats ratio mismatch");
+  const savings = compressionSavingsNative("abcdefgh", "abcd");
+  assert(savings.originalChars === 8 && savings.compressedChars === 4, "stats chars mismatch");
+  assert(savings.savedTokensEst === 1, "stats saved tokens mismatch");
+  console.log("compression_stats_ok");
 
   console.log("CNV1_RUST_BRIDGE_SMOKE_OK");
 }
