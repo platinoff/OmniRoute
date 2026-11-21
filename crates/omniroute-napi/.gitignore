@@ -1,0 +1,9 @@
+# napi-rs build artifacts (opt-in build)
+/target/
+*.node
+index.js
+index.d.ts
+browser.js
+.artifacts/
+npm-debug.log*
+node_modules/

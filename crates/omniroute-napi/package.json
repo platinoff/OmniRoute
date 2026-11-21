@@ -1,0 +1,24 @@
+{
+  "name": "@omniroute/rust-napi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Additive N-API bindings for OmniRoute Rust crates (CNV-1 wave 5). Opt-in build; not part of root workspaces.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "napi": {
+    "name": "omniroute_napi",
+    "triples": {
+      "defaults": true
+    }
+  },
+  "scripts": {
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^2.18.4"
+  },
+  "engines": {
+    "node": ">= 18"
+  }
+}

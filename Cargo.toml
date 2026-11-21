@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "crates/omniroute-gcf",
     "crates/omniroute-compression",
+    "crates/omniroute-napi",
 ]
 
 [workspace.package]
@@ -13,4 +14,8 @@ repository = "https://github.com/diegosouzapw/OmniRoute"
 
 [workspace.dependencies]
 regex = "1"
+serde_json = { version = "1", features = ["preserve_order"] }
+napi = { version = "2", default-features = false, features = ["napi4", "serde-json"] }
+napi-derive = "2"
+napi-build = "2"
 

@@ -1,0 +1,22 @@
+[package]
+name = "omniroute-napi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "N-API bindings for OmniRoute Rust crates (CNV-1 wave 5, additive)"
+repository.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+name = "omniroute_napi"
+path = "src/lib.rs"
+
+[dependencies]
+napi = { workspace = true }
+napi-derive = { workspace = true }
+serde_json = { workspace = true }
+omniroute-gcf = { path = "../omniroute-gcf" }
+omniroute-compression = { path = "../omniroute-compression" }
+
+[build-dependencies]
+napi-build = { workspace = true }
