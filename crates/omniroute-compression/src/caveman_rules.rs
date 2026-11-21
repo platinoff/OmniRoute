@@ -439,6 +439,94 @@ pub fn get_caveman_rule_metadata(rules: &[CavemanRuleMeta]) -> Vec<CavemanRuleMe
         .collect()
 }
 
+/// Parse and validate a rule pack from a JSON value.
+/// Returns a typed `RulePack` only when validation passes and deserialization succeeds.
+pub fn parse_rule_pack_value(value: &Value) -> Result<RulePack, RulePackValidation> {
+    let validation = validate_rule_pack(value);
+    if !validation.valid {
+        return Err(validation);
+    }
+    serde_json::from_value::<RulePack>(value.clone()).map_err(|e| RulePackValidation {
+        valid: false,
+        errors: vec![format!("Rule pack deserialization failed: {}", e)],
+    })
+}
+
+/// Parse and validate a rule pack from a JSON string (FS-safe helper).
+pub fn parse_rule_pack_str(json: &str) -> Result<RulePack, RulePackValidation> {
+    let value: Value = serde_json::from_str(json).map_err(|e| RulePackValidation {
+        valid: false,
+        errors: vec![format!("Rule pack JSON parse failed: {}", e)],
+    })?;
+    parse_rule_pack_value(&value)
+}
+
+/// Validate a rule pack provided as a JSON string.
+pub fn validate_rule_pack_str(json: &str) -> RulePackValidation {
+    match serde_json::from_str::<Value>(json) {
+        Ok(v) => validate_rule_pack(&v),
+        Err(e) => RulePackValidation {
+            valid: false,
+            errors: vec![format!("Rule pack JSON parse failed: {}", e)],
+        },
+    }
+}
+
+/// Aggregated metadata for rule packs of a language (pure/FS-safe).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RulePackMetadata {
+    pub language: String,
+    pub categories: Vec<String>,
+    pub rule_count: usize,
+}
+
+/// Summarize a set of rule packs for a language.
+/// Categories are de-duplicated and sorted; rule_count is the total across packs.
+pub fn summarize_language_packs(language: &str, packs: &[RulePack]) -> RulePackMetadata {
+    let mut categories: Vec<String> = packs.iter().map(|p| p.category.clone()).collect();
+    categories.sort();
+    categories.dedup();
+    let rule_count = packs.iter().map(|p| p.rules.len()).sum();
+    RulePackMetadata {
+        language: language.to_string(),
+        categories,
+        rule_count,
+    }
+}
+
+/// Filter file rules by context and intensity (pure helper over in-memory data).
+pub fn filter_file_rules_for_context(
+    rules: &[FileRule],
+    context: CavemanRuleContext,
+    intensity: CavemanIntensity,
+) -> Vec<&FileRule> {
+    let rank = intensity_rank(intensity);
+    rules
+        .iter()
+        .filter(|rule| {
+            let meta = CavemanRuleMeta::from_file_rule(rule);
+            let ctx_ok = meta.context == CavemanRuleContext::All || meta.context == context;
+            let intensity_ok = intensity_rank(meta.min_intensity) <= rank;
+            ctx_ok && intensity_ok
+        })
+        .collect()
+}
+
+/// Collect metadata for file rules that match context/intensity.
+pub fn select_file_rule_metadata(
+    rules: &[FileRule],
+    context: CavemanRuleContext,
+    intensity: CavemanIntensity,
+) -> Vec<CavemanRuleMetadataView> {
+    let filtered = filter_file_rules_for_context(rules, context, intensity);
+    let metas: Vec<CavemanRuleMeta> = filtered
+        .into_iter()
+        .map(CavemanRuleMeta::from_file_rule)
+        .collect();
+    get_caveman_rule_metadata(&metas)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -570,5 +658,103 @@ mod tests {
         assert_eq!(m.context, CavemanRuleContext::All);
         assert_eq!(m.category, CavemanRuleCategory::Filler);
         assert_eq!(m.min_intensity, CavemanIntensity::Lite);
+    }
+
+    #[test]
+    fn parses_and_validates_rule_pack_from_str() {
+        let json = r#"{
+            "language": "en",
+            "category": "filler",
+            "rules": [
+                { "name": "a", "pattern": "\\btest\\b", "replacement": "" },
+                { "name": "b", "pattern": "\\bfoo\\b", "replacement": "bar", "context": "user", "minIntensity": "full" }
+            ]
+        }"#;
+        let pack = parse_rule_pack_str(json).expect("valid pack");
+        assert_eq!(pack.language, "en");
+        assert_eq!(pack.category, "filler");
+        assert_eq!(pack.rules.len(), 2);
+
+        let invalid = r#"{ "language": "en", "category": "filler", "rules": [{}] }"#;
+        let err = parse_rule_pack_str(invalid).expect_err("invalid pack");
+        assert!(!err.valid);
+        assert!(!err.errors.is_empty());
+
+        let bad_json = "{ not json";
+        let v = validate_rule_pack_str(bad_json);
+        assert!(!v.valid);
+        assert!(v.errors[0].contains("JSON parse failed"));
+    }
+
+    #[test]
+    fn summarizes_language_packs_and_filters_file_rules() {
+        let p1 = RulePack {
+            language: "en".into(),
+            category: "filler".into(),
+            rules: vec![FileRule {
+                name: "a".into(),
+                pattern: "a".into(),
+                replacement: Some("".into()),
+                replacement_map: None,
+                flags: None,
+                context: Some("all".into()),
+                category: Some("filler".into()),
+                min_intensity: Some("lite".into()),
+                description: None,
+            }],
+        };
+        let p2 = RulePack {
+            language: "en".into(),
+            category: "context".into(),
+            rules: vec![
+                FileRule {
+                    name: "b".into(),
+                    pattern: "b".into(),
+                    replacement: Some("".into()),
+                    replacement_map: None,
+                    flags: None,
+                    context: Some("user".into()),
+                    category: Some("context".into()),
+                    min_intensity: Some("full".into()),
+                    description: None,
+                },
+                FileRule {
+                    name: "c".into(),
+                    pattern: "c".into(),
+                    replacement: Some("".into()),
+                    replacement_map: None,
+                    flags: None,
+                    context: Some("all".into()),
+                    category: Some("context".into()),
+                    min_intensity: Some("ultra".into()),
+                    description: None,
+                },
+            ],
+        };
+        let summary = summarize_language_packs("en", &[p1.clone(), p2.clone()]);
+        assert_eq!(summary.language, "en");
+        assert_eq!(summary.categories, vec!["context", "filler"]);
+        assert_eq!(summary.rule_count, 3);
+
+        let mut all_rules = p1.rules.clone();
+        all_rules.extend(p2.rules.clone());
+        let lite_user = filter_file_rules_for_context(
+            &all_rules,
+            CavemanRuleContext::User,
+            CavemanIntensity::Lite,
+        );
+        assert_eq!(lite_user.len(), 1);
+        assert_eq!(lite_user[0].name, "a");
+
+        let ultra_user = filter_file_rules_for_context(
+            &all_rules,
+            CavemanRuleContext::User,
+            CavemanIntensity::Ultra,
+        );
+        assert_eq!(ultra_user.len(), 3);
+
+        let meta =
+            select_file_rule_metadata(&all_rules, CavemanRuleContext::User, CavemanIntensity::Full);
+        assert_eq!(meta.len(), 2);
     }
 }
