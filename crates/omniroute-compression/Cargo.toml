@@ -1,0 +1,16 @@
+[package]
+name = "omniroute-compression"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Compression pure utilities (validation, exclusions, preservation helpers) ported from OmniRoute open-sse (CNV-1 wave 3)"
+repository.workspace = true
+
+[lib]
+name = "omniroute_compression"
+path = "src/lib.rs"
+
+[dependencies]
+regex = { workspace = true }
+
+[dev-dependencies]
