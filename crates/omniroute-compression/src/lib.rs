@@ -3,11 +3,14 @@
 //! Wave 3–4 (CNV-1): validators/helpers, exclusions, fenced-block preservation,
 //! compression validation, and caveman rule pack validation/metadata/selectors.
 //! Wave 17+: portable core helpers (message content, language detection, ultra heuristics).
+//! Wave 19+: output-mode primitives and lite text helpers.
 
 pub mod caveman_rules;
 pub mod exclusions;
 pub mod language_detector;
+pub mod lite_text;
 pub mod message_content;
+pub mod output_mode;
 pub mod preservation;
 pub mod ultra_heuristic;
 pub mod validation;
@@ -25,8 +28,17 @@ pub use exclusions::{
     normalize_compression_exclusions_strings, CompressionExclusions,
 };
 pub use language_detector::{detect_compression_language, list_supported_compression_languages};
+pub use lite_text::{
+    back_off_to_word_boundary, collapse_newline_runs, normalize_message_whitespace,
+    trim_trailing_horizontal_whitespace, truncate_tool_content, TOOL_TRUNCATION_LOOKBACK,
+};
 pub use message_content::{
     extract_text_content, is_text_block, map_text_content, replace_text_content,
+};
+pub use output_mode::{
+    apply_caveman_output_mode, build_caveman_output_instruction, should_bypass_caveman_output_mode,
+    CavemanOutputIntensity, CavemanOutputModeConfig, CavemanOutputModeResult,
+    CAVEMAN_OUTPUT_MARKER, SHARED_BOUNDARIES,
 };
 pub use preservation::{extract_fenced_code_blocks, find_fenced_code_blocks};
 pub use ultra_heuristic::{prune_by_score, score_token};
