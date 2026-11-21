@@ -1,10 +1,10 @@
 /**
- * Opt-in native Rust bridge (CNV-1 W5/W6).
+ * Opt-in native Rust bridge (CNV-1 W5+).
  *
  * Loads the napi-rs addon from `crates/omniroute-napi` when available and
- * exposes wrappers over ported Rust primitives (GCF, validation, exclusions,
- * rule-pack validation). This module is NOT imported by default compression
- * paths and is NOT exported from `compression/index.ts`.
+ * exposes wrappers over ported Rust primitives (GCF, compression validation,
+ * exclusions, rule-pack validation, SSE/protocol helpers). This module is NOT
+ * imported by default runtime paths and is NOT exported from `compression/index.ts`.
  *
  * Enable/use explicitly. Default runtime behavior remains TS implementations.
  */
@@ -24,6 +24,13 @@ type NativeBinding = {
     model: string | null | undefined,
     exclusionsJson: string
   ): boolean;
+  // SSE/protocol primitives (W8+ opt-in)
+  sseStripAnsiCodes?(s: string): string;
+  sseParseDataPayload?(data: string, eventType?: string | null): string | null;
+  sseParseDataLines?(linesJson: string, eventType?: string | null): string | null;
+  sseExtractDataLine?(line: string): string | null;
+  sseParseLine?(line: string): string | null;
+  sseFormatSse?(dataJson: string | null | undefined, sourceFormat?: string | null): string;
 };
 
 let cachedBinding: NativeBinding | null | undefined;
@@ -139,6 +146,52 @@ export function isCompressionExcludedNative(
 ): boolean {
   const list = Array.isArray(exclusions) ? exclusions : [];
   return binding().isCompressionExcluded(target.provider ?? null, target.model ?? null, JSON.stringify(list));
+}
+
+/** SSE: strip ANSI/VT100 escapes and stray C0 controls (preserves \t, \n, \r). */
+export function stripAnsiCodesNative(s: string): string {
+  const fn = binding().sseStripAnsiCodes;
+  if (typeof fn !== "function") throw new Error("native sseStripAnsiCodes not available (rebuild addon)");
+  return fn(s);
+}
+
+/** SSE: parse a data payload string to a value (or null). */
+export function parseSseDataPayloadNative(data: string, eventType?: string | null): unknown | null {
+  const fn = binding().sseParseDataPayload;
+  if (typeof fn !== "function") throw new Error("native sseParseDataPayload not available (rebuild addon)");
+  const json = fn(data, eventType ?? null);
+  return json == null ? null : (JSON.parse(json) as unknown);
+}
+
+/** SSE: parse joined data lines (JSON array of strings) to a value (or null). */
+export function parseSseDataLinesNative(lines: string[], eventType?: string | null): unknown | null {
+  const fn = binding().sseParseDataLines;
+  if (typeof fn !== "function") throw new Error("native sseParseDataLines not available (rebuild addon)");
+  const json = fn(JSON.stringify(lines), eventType ?? null);
+  return json == null ? null : (JSON.parse(json) as unknown);
+}
+
+/** SSE: extract payload text from a `data:` line, or null. */
+export function extractSseDataLineNative(line: string): string | null {
+  const fn = binding().sseExtractDataLine;
+  if (typeof fn !== "function") throw new Error("native sseExtractDataLine not available (rebuild addon)");
+  return fn(line);
+}
+
+/** SSE: parse a single SSE line to a value (or null). */
+export function parseSseLineNative(line: string): unknown | null {
+  const fn = binding().sseParseLine;
+  if (typeof fn !== "function") throw new Error("native sseParseLine not available (rebuild addon)");
+  const json = fn(line);
+  return json == null ? null : (JSON.parse(json) as unknown);
+}
+
+/** SSE: format an SSE frame string. */
+export function formatSseNative(data: unknown | null | undefined, sourceFormat?: string | null): string {
+  const fn = binding().sseFormatSse;
+  if (typeof fn !== "function") throw new Error("native sseFormatSse not available (rebuild addon)");
+  const payload = data === undefined || data === null ? null : JSON.stringify(data);
+  return fn(payload, sourceFormat ?? null);
 }
 
 /** Low-level access for advanced/experimental use. */

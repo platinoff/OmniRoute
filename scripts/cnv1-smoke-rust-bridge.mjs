@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Opt-in smoke test for CNV-1 Rust N-API bridge (W5/W6).
+ * Opt-in smoke test for CNV-1 Rust N-API bridge (W5+).
  * Does not run in default CI/test flows.
  *
  * Usage (tsx, since adapter is TypeScript):
@@ -15,9 +15,14 @@
 import {
   decodeGenericNative,
   encodeGenericNative,
+  extractSseDataLineNative,
+  formatSseNative,
   getRustBridgeLoadError,
   isCompressionExcludedNative,
   isRustBridgeAvailable,
+  parseSseDataPayloadNative,
+  parseSseLineNative,
+  stripAnsiCodesNative,
   validateCompressionNative,
   validateRulePackNative,
 } from "../open-sse/services/compression/nativeRust.ts";
@@ -57,6 +62,18 @@ function main() {
   const ex = isCompressionExcludedNative({ provider: "openai", model: "gpt-5.6" }, ["gpt-5.6"]);
   assert(ex === true, "exclusion expected true");
   console.log("exclusion_ok");
+
+  const stripped = stripAnsiCodesNative("\x1b[2Kdata: hi");
+  assert(stripped === "data: hi", "sse strip mismatch");
+  const payload = parseSseDataPayloadNative(' {"a":1} ', "evt");
+  assert(JSON.stringify(payload) === JSON.stringify({ a: 1, type: "evt" }), "sse payload mismatch");
+  const line = parseSseLineNative("data: [DONE]");
+  assert(JSON.stringify(line) === JSON.stringify({ done: true }), "sse line mismatch");
+  const extracted = extractSseDataLineNative("  data:  x\r");
+  assert(extracted === "x", "sse extract mismatch");
+  const frame = formatSseNative({ done: true }, null);
+  assert(frame === "data: [DONE]\n\n", "sse format mismatch");
+  console.log("sse_ok");
 
   console.log("CNV1_RUST_BRIDGE_SMOKE_OK");
 }

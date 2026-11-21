@@ -1,4 +1,4 @@
-//! N-API bindings for OmniRoute Rust crates (CNV-1 wave 5).
+//! N-API bindings for OmniRoute Rust crates (CNV-1 wave 5+).
 //! Additive, opt-in native bindings. Does not affect existing npm/Node runtime flows.
 
 use napi::bindgen_prelude::*;
@@ -7,6 +7,10 @@ use omniroute_compression::{
     is_compression_excluded, validate_compression, validate_rule_pack, CompressionExclusions,
 };
 use omniroute_gcf::{decode_generic, encode_generic, GenericOptions};
+use omniroute_sse::{
+    extract_sse_data_line, format_sse, parse_sse_data_lines, parse_sse_data_payload,
+    parse_sse_line, strip_ansi_codes,
+};
 use serde_json::Value;
 
 fn err_msg(prefix: &str, msg: impl std::fmt::Display) -> napi::Error {
@@ -84,4 +88,73 @@ pub fn is_compression_excluded_js(
         model.as_deref(),
         &exclusions,
     ))
+}
+
+/// Strip ANSI/VT100 escapes and stray C0 controls (preserves \t, \n, \r).
+#[napi(js_name = "sseStripAnsiCodes")]
+pub fn sse_strip_ansi_codes_js(s: String) -> String {
+    strip_ansi_codes(&s)
+}
+
+/// Parse SSE data payload. Returns JSON string of parsed value, or null if unparseable/empty.
+#[napi(js_name = "sseParseDataPayload")]
+pub fn sse_parse_data_payload_js(
+    data: String,
+    event_type: Option<String>,
+) -> Result<Option<String>> {
+    let parsed = parse_sse_data_payload(&data, event_type.as_deref());
+    match parsed {
+        Some(v) => serde_json::to_string(&v)
+            .map(Some)
+            .map_err(|e| err_msg("sseParseDataPayload stringify", e)),
+        None => Ok(None),
+    }
+}
+
+/// Parse joined SSE data lines. `lines_json` must be a JSON array of strings.
+#[napi(js_name = "sseParseDataLines")]
+pub fn sse_parse_data_lines_js(
+    lines_json: String,
+    event_type: Option<String>,
+) -> Result<Option<String>> {
+    let lines: Vec<String> =
+        serde_json::from_str(&lines_json).map_err(|e| err_msg("sseParseDataLines parse", e))?;
+    let parsed = parse_sse_data_lines(&lines, event_type.as_deref());
+    match parsed {
+        Some(v) => serde_json::to_string(&v)
+            .map(Some)
+            .map_err(|e| err_msg("sseParseDataLines stringify", e)),
+        None => Ok(None),
+    }
+}
+
+/// Extract payload text from an SSE `data:` line, or null if not a data line.
+#[napi(js_name = "sseExtractDataLine")]
+pub fn sse_extract_data_line_js(line: String) -> Option<String> {
+    extract_sse_data_line(&line)
+}
+
+/// Parse a single SSE line. Returns JSON string of parsed value, or null.
+#[napi(js_name = "sseParseLine")]
+pub fn sse_parse_line_js(line: String) -> Result<Option<String>> {
+    let parsed = parse_sse_line(&line);
+    match parsed {
+        Some(v) => serde_json::to_string(&v)
+            .map(Some)
+            .map_err(|e| err_msg("sseParseLine stringify", e)),
+        None => Ok(None),
+    }
+}
+
+/// Format an SSE frame. `data_json` is a JSON string value (or null/undefined for empty frame).
+#[napi(js_name = "sseFormatSse")]
+pub fn sse_format_sse_js(
+    data_json: Option<String>,
+    source_format: Option<String>,
+) -> Result<String> {
+    let value: Option<Value> = match data_json {
+        None => None,
+        Some(s) => Some(serde_json::from_str(&s).map_err(|e| err_msg("sseFormatSse parse", e))?),
+    };
+    Ok(format_sse(value.as_ref(), source_format.as_deref()))
 }
