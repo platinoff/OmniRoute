@@ -5,6 +5,7 @@
 //! Wave 17+: portable core helpers (message content, language detection, ultra heuristics).
 //! Wave 19+: output-mode primitives and lite text helpers.
 //! Wave 21+: lite body-level transforms.
+//! Wave 23+: lightweight compression stats/token-estimation helpers.
 
 pub mod caveman_rules;
 pub mod exclusions;
@@ -14,6 +15,7 @@ pub mod lite_text;
 pub mod message_content;
 pub mod output_mode;
 pub mod preservation;
+pub mod stats;
 pub mod ultra_heuristic;
 pub mod validation;
 
@@ -47,5 +49,9 @@ pub use output_mode::{
     CAVEMAN_OUTPUT_MARKER, SHARED_BOUNDARIES,
 };
 pub use preservation::{extract_fenced_code_blocks, find_fenced_code_blocks};
+pub use stats::{
+    compression_ratio, compression_savings, estimate_token_savings, estimate_tokens,
+    CompressionSavings,
+};
 pub use ultra_heuristic::{prune_by_score, score_token};
 pub use validation::{validate_compression, ValidationResult};
