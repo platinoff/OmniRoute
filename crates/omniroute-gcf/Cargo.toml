@@ -1,0 +1,16 @@
+[package]
+name = "omniroute-gcf"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "GCF (Graph Compact Format) scalar/generic primitives ported from OmniRoute open-sse (CNV-1 wave 1)"
+repository.workspace = true
+
+[lib]
+name = "omniroute_gcf"
+path = "src/lib.rs"
+
+[dependencies]
+
+[dev-dependencies]
+serde_json = "1"

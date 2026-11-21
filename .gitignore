@@ -253,3 +253,8 @@ tests/homolog/ui/.auth/
 homolog-report/
 docker-compose.yml.bak
 .playwright-cli/
+
+# Rust (CNV-1 wave 1)
+/target/
+**/target/
+Cargo.lock
