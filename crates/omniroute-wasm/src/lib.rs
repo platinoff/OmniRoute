@@ -507,3 +507,88 @@ pub fn compression_back_off_to_word_boundary(content: String, cut_byte: u32) -> 
 pub fn compression_truncate_tool_content(content: String, max_len: u32) -> String {
     omniroute_compression::truncate_tool_content(&content, max_len as usize)
 }
+
+// ---------- Compression lite body transforms (W21+, opt-in) ----------
+
+#[cfg(target_arch = "wasm32")]
+fn lite_body_options_wasm(
+    preserve_system_prompt: Option<bool>,
+    supports_vision: Option<bool>,
+) -> omniroute_compression::LiteCompressionOptions {
+    omniroute_compression::LiteCompressionOptions {
+        preserve_system_prompt: preserve_system_prompt.unwrap_or(false),
+        supports_vision,
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+fn body_transform_json_wasm(
+    result: omniroute_compression::BodyTransformResult,
+) -> Result<String, JsValue> {
+    let out = serde_json::json!({
+        "body": result.body,
+        "applied": result.applied,
+    });
+    serde_json::to_string(&out).map_err(|e| js_err("compressionBodyTransform stringify", e))
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionCollapseWhitespace)]
+pub fn compression_collapse_whitespace(
+    body_json: String,
+    preserve_system_prompt: Option<bool>,
+    supports_vision: Option<bool>,
+) -> Result<String, JsValue> {
+    let body: serde_json::Value = serde_json::from_str(&body_json)
+        .map_err(|e| js_err("compressionCollapseWhitespace parse", e))?;
+    let opts = lite_body_options_wasm(preserve_system_prompt, supports_vision);
+    body_transform_json_wasm(omniroute_compression::collapse_whitespace(&body, opts))
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionDedupSystemPrompt)]
+pub fn compression_dedup_system_prompt(
+    body_json: String,
+    preserve_system_prompt: Option<bool>,
+    supports_vision: Option<bool>,
+) -> Result<String, JsValue> {
+    let body: serde_json::Value = serde_json::from_str(&body_json)
+        .map_err(|e| js_err("compressionDedupSystemPrompt parse", e))?;
+    let opts = lite_body_options_wasm(preserve_system_prompt, supports_vision);
+    body_transform_json_wasm(omniroute_compression::dedup_system_prompt(&body, opts))
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionCompressToolResults)]
+pub fn compression_compress_tool_results(body_json: String) -> Result<String, JsValue> {
+    let body: serde_json::Value = serde_json::from_str(&body_json)
+        .map_err(|e| js_err("compressionCompressToolResults parse", e))?;
+    body_transform_json_wasm(omniroute_compression::compress_tool_results(&body))
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionRemoveRedundantContent)]
+pub fn compression_remove_redundant_content(
+    body_json: String,
+    preserve_system_prompt: Option<bool>,
+    supports_vision: Option<bool>,
+) -> Result<String, JsValue> {
+    let body: serde_json::Value = serde_json::from_str(&body_json)
+        .map_err(|e| js_err("compressionRemoveRedundantContent parse", e))?;
+    let opts = lite_body_options_wasm(preserve_system_prompt, supports_vision);
+    body_transform_json_wasm(omniroute_compression::remove_redundant_content(&body, opts))
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionReplaceImageUrls)]
+pub fn compression_replace_image_urls(
+    body_json: String,
+    supports_vision: Option<bool>,
+) -> Result<String, JsValue> {
+    let body: serde_json::Value = serde_json::from_str(&body_json)
+        .map_err(|e| js_err("compressionReplaceImageUrls parse", e))?;
+    body_transform_json_wasm(omniroute_compression::replace_image_urls(
+        &body,
+        supports_vision,
+    ))
+}

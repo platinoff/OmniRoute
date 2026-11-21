@@ -5,12 +5,13 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use omniroute_compression::{
     apply_caveman_output_mode, back_off_to_word_boundary, build_caveman_output_instruction,
-    collapse_newline_runs, detect_compression_language, extract_text_content,
-    is_compression_excluded, is_text_block, list_supported_compression_languages,
-    normalize_message_whitespace, prune_by_score, replace_text_content, score_token,
+    collapse_newline_runs, collapse_whitespace, compress_tool_results, dedup_system_prompt,
+    detect_compression_language, extract_text_content, is_compression_excluded, is_text_block,
+    list_supported_compression_languages, normalize_message_whitespace, prune_by_score,
+    remove_redundant_content, replace_image_urls, replace_text_content, score_token,
     should_bypass_caveman_output_mode, trim_trailing_horizontal_whitespace, truncate_tool_content,
-    validate_compression, validate_rule_pack, CavemanOutputIntensity, CavemanOutputModeConfig,
-    CompressionExclusions,
+    validate_compression, validate_rule_pack, BodyTransformResult, CavemanOutputIntensity,
+    CavemanOutputModeConfig, CompressionExclusions, LiteCompressionOptions,
 };
 use omniroute_gcf::{decode_generic, encode_generic, GenericOptions};
 use omniroute_sse::{
@@ -453,6 +454,85 @@ pub fn compression_back_off_to_word_boundary(content: String, cut_byte: u32) -> 
 #[napi(js_name = "compressionTruncateToolContent")]
 pub fn compression_truncate_tool_content(content: String, max_len: u32) -> String {
     truncate_tool_content(&content, max_len as usize)
+}
+
+// ---------- Compression lite body transforms (W21+, opt-in) ----------
+
+fn lite_body_options_js(
+    preserve_system_prompt: Option<bool>,
+    supports_vision: Option<bool>,
+) -> LiteCompressionOptions {
+    LiteCompressionOptions {
+        preserve_system_prompt: preserve_system_prompt.unwrap_or(false),
+        supports_vision,
+    }
+}
+
+fn body_transform_json(result: BodyTransformResult) -> Result<String> {
+    let out = serde_json::json!({
+        "body": result.body,
+        "applied": result.applied,
+    });
+    serde_json::to_string(&out).map_err(|e| err_msg("compressionBodyTransform stringify", e))
+}
+
+/// Collapse whitespace in message string contents. `body_json` must be a request body JSON object.
+#[napi(js_name = "compressionCollapseWhitespace")]
+pub fn compression_collapse_whitespace_js(
+    body_json: String,
+    preserve_system_prompt: Option<bool>,
+    supports_vision: Option<bool>,
+) -> Result<String> {
+    let body: Value = serde_json::from_str(&body_json)
+        .map_err(|e| err_msg("compressionCollapseWhitespace parse", e))?;
+    let opts = lite_body_options_js(preserve_system_prompt, supports_vision);
+    body_transform_json(collapse_whitespace(&body, opts))
+}
+
+/// Deduplicate system prompt messages by first 200 chars key. `body_json` must be a request body JSON object.
+#[napi(js_name = "compressionDedupSystemPrompt")]
+pub fn compression_dedup_system_prompt_js(
+    body_json: String,
+    preserve_system_prompt: Option<bool>,
+    supports_vision: Option<bool>,
+) -> Result<String> {
+    let body: Value = serde_json::from_str(&body_json)
+        .map_err(|e| err_msg("compressionDedupSystemPrompt parse", e))?;
+    let opts = lite_body_options_js(preserve_system_prompt, supports_vision);
+    body_transform_json(dedup_system_prompt(&body, opts))
+}
+
+/// Compress tool result messages longer than 2000 chars. `body_json` must be a request body JSON object.
+#[napi(js_name = "compressionCompressToolResults")]
+pub fn compression_compress_tool_results_js(body_json: String) -> Result<String> {
+    let body: Value = serde_json::from_str(&body_json)
+        .map_err(|e| err_msg("compressionCompressToolResults parse", e))?;
+    body_transform_json(compress_tool_results(&body))
+}
+
+/// Remove consecutive messages with identical role and content. `body_json` must be a request body JSON object.
+#[napi(js_name = "compressionRemoveRedundantContent")]
+pub fn compression_remove_redundant_content_js(
+    body_json: String,
+    preserve_system_prompt: Option<bool>,
+    supports_vision: Option<bool>,
+) -> Result<String> {
+    let body: Value = serde_json::from_str(&body_json)
+        .map_err(|e| err_msg("compressionRemoveRedundantContent parse", e))?;
+    let opts = lite_body_options_js(preserve_system_prompt, supports_vision);
+    body_transform_json(remove_redundant_content(&body, opts))
+}
+
+/// Replace data-image base64 URLs with text placeholders when `supports_vision == false`.
+/// `body_json` must be a request body JSON object.
+#[napi(js_name = "compressionReplaceImageUrls")]
+pub fn compression_replace_image_urls_js(
+    body_json: String,
+    supports_vision: Option<bool>,
+) -> Result<String> {
+    let body: Value = serde_json::from_str(&body_json)
+        .map_err(|e| err_msg("compressionReplaceImageUrls parse", e))?;
+    body_transform_json(replace_image_urls(&body, supports_vision))
 }
 
 /// Stateful SSE event-prefix buffer (opt-in wrapper).

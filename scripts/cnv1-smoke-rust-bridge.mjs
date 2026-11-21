@@ -19,12 +19,17 @@ import {
   compressionBackOffToWordBoundaryNative,
   compressionBuildCavemanOutputInstructionNative,
   compressionCollapseNewlineRunsNative,
+  compressionCollapseWhitespaceNative,
+  compressionCompressToolResultsNative,
+  compressionDedupSystemPromptNative,
   compressionDetectLanguageNative,
   compressionExtractTextContentNative,
   compressionIsTextBlockNative,
   compressionListSupportedLanguagesNative,
   compressionNormalizeMessageWhitespaceNative,
   compressionPruneByScoreNative,
+  compressionRemoveRedundantContentNative,
+  compressionReplaceImageUrlsNative,
   compressionReplaceTextContentNative,
   compressionScoreTokenNative,
   compressionShouldBypassCavemanOutputModeNative,
@@ -164,6 +169,62 @@ function main() {
   const trunc = compressionTruncateToolContentNative("hello wonderful world", 9);
   assert(trunc.startsWith("hello ") && trunc.endsWith("\n...[truncated]"), "lite truncate mismatch");
   console.log("compression_output_lite_ok");
+
+  // Compression lite body transforms (W21+, opt-in)
+  const collapsed = compressionCollapseWhitespaceNative({
+    messages: [
+      { role: "system", content: "a \n\n\nb\t" },
+      { role: "user", content: "x \n\n\ny\t" },
+    ],
+  }, true);
+  assert(collapsed.applied === true, "lite body collapse applied mismatch");
+  assert(collapsed.body?.messages?.[0]?.content === "a \n\n\nb\t", "lite body collapse system preserved mismatch");
+  assert(collapsed.body?.messages?.[1]?.content === "x\n\ny", "lite body collapse content mismatch");
+
+  const deduped = compressionDedupSystemPromptNative({
+    messages: [
+      { role: "system", content: " same prompt " },
+      { role: "user", content: "hi" },
+      { role: "system", content: "same prompt" },
+    ],
+  });
+  assert(deduped.applied === true, "lite body dedup applied mismatch");
+  assert(deduped.body?.messages?.length === 2, "lite body dedup length mismatch");
+
+  const compressedTools = compressionCompressToolResultsNative({
+    messages: [{ role: "tool", content: "hello wonderful world ".repeat(200) }],
+  });
+  assert(compressedTools.applied === true, "lite body tool compress applied mismatch");
+  assert(String(compressedTools.body?.messages?.[0]?.content).endsWith("\n...[truncated]"), "lite body tool compress content mismatch");
+
+  const dedupContent = compressionRemoveRedundantContentNative({
+    messages: [
+      { role: "user", content: "same" },
+      { role: "user", content: "same" },
+      { role: "assistant", content: "ok" },
+    ],
+  });
+  assert(dedupContent.applied === true, "lite body redundant applied mismatch");
+  assert(dedupContent.body?.messages?.length === 2, "lite body redundant length mismatch");
+
+  const replacedImgs = compressionReplaceImageUrlsNative(
+    {
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "look" },
+            { type: "image_url", image_url: { url: "data:image/png;base64,abc" } },
+          ],
+        },
+      ],
+    },
+    false
+  );
+  assert(replacedImgs.applied === true, "lite body image replace applied mismatch");
+  assert(replacedImgs.body?.messages?.[0]?.content?.[1]?.type === "text", "lite body image replace type mismatch");
+  assert(replacedImgs.body?.messages?.[0]?.content?.[1]?.text === "[image: png]", "lite body image replace text mismatch");
+  console.log("compression_lite_body_ok");
 
   console.log("CNV1_RUST_BRIDGE_SMOKE_OK");
 }

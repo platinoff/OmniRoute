@@ -85,6 +85,24 @@ type NativeBinding = {
   compressionNormalizeMessageWhitespace?(content: string): string;
   compressionBackOffToWordBoundary?(content: string, cutByte: number): number;
   compressionTruncateToolContent?(content: string, maxLen: number): string;
+  // Compression lite body transforms (W21+, opt-in)
+  compressionCollapseWhitespace?(
+    bodyJson: string,
+    preserveSystemPrompt?: boolean | null,
+    supportsVision?: boolean | null
+  ): string;
+  compressionDedupSystemPrompt?(
+    bodyJson: string,
+    preserveSystemPrompt?: boolean | null,
+    supportsVision?: boolean | null
+  ): string;
+  compressionCompressToolResults?(bodyJson: string): string;
+  compressionRemoveRedundantContent?(
+    bodyJson: string,
+    preserveSystemPrompt?: boolean | null,
+    supportsVision?: boolean | null
+  ): string;
+  compressionReplaceImageUrls?(bodyJson: string, supportsVision?: boolean | null): string;
 };
 
 let cachedBinding: NativeBinding | null | undefined;
@@ -435,6 +453,59 @@ export function compressionTruncateToolContentNative(content: string, maxLen: nu
   const fn = binding().compressionTruncateToolContent;
   if (typeof fn !== "function") throw new Error("native compressionTruncateToolContent not available (rebuild addon)");
   return fn(content, maxLen);
+}
+
+// ---------- Compression lite body transforms (W21+, opt-in) ----------
+
+export interface NativeBodyTransformResult {
+  body: unknown;
+  applied: boolean;
+}
+
+export function compressionCollapseWhitespaceNative(
+  body: unknown,
+  preserveSystemPrompt?: boolean | null,
+  supportsVision?: boolean | null
+): NativeBodyTransformResult {
+  const fn = binding().compressionCollapseWhitespace;
+  if (typeof fn !== "function") throw new Error("native compressionCollapseWhitespace not available (rebuild addon)");
+  return JSON.parse(fn(JSON.stringify(body), preserveSystemPrompt ?? null, supportsVision ?? null)) as NativeBodyTransformResult;
+}
+
+export function compressionDedupSystemPromptNative(
+  body: unknown,
+  preserveSystemPrompt?: boolean | null,
+  supportsVision?: boolean | null
+): NativeBodyTransformResult {
+  const fn = binding().compressionDedupSystemPrompt;
+  if (typeof fn !== "function") throw new Error("native compressionDedupSystemPrompt not available (rebuild addon)");
+  return JSON.parse(fn(JSON.stringify(body), preserveSystemPrompt ?? null, supportsVision ?? null)) as NativeBodyTransformResult;
+}
+
+export function compressionCompressToolResultsNative(body: unknown): NativeBodyTransformResult {
+  const fn = binding().compressionCompressToolResults;
+  if (typeof fn !== "function") throw new Error("native compressionCompressToolResults not available (rebuild addon)");
+  return JSON.parse(fn(JSON.stringify(body))) as NativeBodyTransformResult;
+}
+
+export function compressionRemoveRedundantContentNative(
+  body: unknown,
+  preserveSystemPrompt?: boolean | null,
+  supportsVision?: boolean | null
+): NativeBodyTransformResult {
+  const fn = binding().compressionRemoveRedundantContent;
+  if (typeof fn !== "function")
+    throw new Error("native compressionRemoveRedundantContent not available (rebuild addon)");
+  return JSON.parse(fn(JSON.stringify(body), preserveSystemPrompt ?? null, supportsVision ?? null)) as NativeBodyTransformResult;
+}
+
+export function compressionReplaceImageUrlsNative(
+  body: unknown,
+  supportsVision?: boolean | null
+): NativeBodyTransformResult {
+  const fn = binding().compressionReplaceImageUrls;
+  if (typeof fn !== "function") throw new Error("native compressionReplaceImageUrls not available (rebuild addon)");
+  return JSON.parse(fn(JSON.stringify(body), supportsVision ?? null)) as NativeBodyTransformResult;
 }
 
 /** Low-level access for advanced/experimental use. */
