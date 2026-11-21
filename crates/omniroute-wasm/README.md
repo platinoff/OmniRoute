@@ -21,6 +21,12 @@ Not wired into default omniroute runtime/build/test flows.
 - `validateCompressionJson(original, compressed) -> string` (`{valid,errors,warnings,fallbackApplied}`)
 - `validateRulePackJson(json) -> string` (`{valid,errors}`)
 - `isCompressionExcluded(provider?, model?, exclusionsJson) -> boolean`
+- `sseAppendBoundedText(current, next) -> string`
+- `sseHasActiveDeltaValue(valueJson) -> boolean`
+- `sseFixInvalidId(parsedJson, fallbackId?) -> string` (`{"value","changed"}`)
+- `sseBuildSyntheticChatChunk(id, model, created, deltaJson, finishReasonJson?) -> string` (`created` as JS number, unix seconds)
+- `SseDataLineNormalizerState` — `new()`, `hasPending()`, `normalize(lines: string[])`
+- `SseEventPrefixBufferState` — `new()`, `clear()`, `eventType()`, `flush()`, `prefixData(output,line)`, `remember(line)`
 
 ## Build (opt-in)
 

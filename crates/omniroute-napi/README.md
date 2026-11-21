@@ -21,6 +21,12 @@ Additive N-API bindings for OmniRoute Rust crates (`omniroute-gcf`, `omniroute-c
 - `sseIsKnownNonClaudeStreamPayload(parsedJson: string, eventType?: string | null): boolean`
 - `sseUnwrapGeminiChunk(parsedJson: string): string` — returns JSON string of unwrapped/original value
 - `sseNormalizeLinesBatch(linesJson: string): string` — `linesJson`/result are JSON arrays of strings (single-batch, fresh normalizer)
+- `sseAppendBoundedText(current: string, next: string): string`
+- `sseHasActiveDeltaValue(valueJson: string): boolean`
+- `sseFixInvalidId(parsedJson: string, fallbackId?: string | null): string` — JSON `{ "value", "changed" }`
+- `sseBuildSyntheticChatChunk(id: string, model: string, created: number, deltaJson: string, finishReasonJson?: string | null): string` (unix seconds as JS number)
+- `SseDataLineNormalizerState` class — `new()`, `hasPending()`, `normalize(lines: string[])`
+- `SseEventPrefixBufferState` class — `new()`, `clear()`, `eventType()`, `flush()`, `prefixData(output,line)`, `remember(line)`
 
 ## Build (local, opt-in)
 

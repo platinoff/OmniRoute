@@ -36,6 +36,27 @@ type NativeBinding = {
   sseIsKnownNonClaudeStreamPayload?(parsedJson: string, eventType?: string | null): boolean;
   sseUnwrapGeminiChunk?(parsedJson: string): string;
   sseNormalizeLinesBatch?(linesJson: string): string;
+  sseAppendBoundedText?(current: string, next: string): string;
+  sseHasActiveDeltaValue?(valueJson: string): boolean;
+  sseFixInvalidId?(parsedJson: string, fallbackId?: string | null): string;
+  sseBuildSyntheticChatChunk?(
+    id: string,
+    model: string,
+    created: number,
+    deltaJson: string,
+    finishReasonJson?: string | null
+  ): string;
+  SseDataLineNormalizerState?: new () => {
+    hasPending(): boolean;
+    normalize(lines: string[]): string[];
+  };
+  SseEventPrefixBufferState?: new () => {
+    clear(): void;
+    eventType(): string;
+    flush(): string;
+    prefixData(output: string, line: string): string;
+    remember(line: string): void;
+  };
 };
 
 let cachedBinding: NativeBinding | null | undefined;
@@ -232,6 +253,44 @@ export function normalizeSseLinesBatchNative(lines: string[]): string[] {
   const fn = binding().sseNormalizeLinesBatch;
   if (typeof fn !== "function") throw new Error("native sseNormalizeLinesBatch not available (rebuild addon)");
   return JSON.parse(fn(JSON.stringify(lines))) as string[];
+}
+
+/** SSE: append bounded streamed text (tail-capped). */
+export function appendBoundedTextNative(current: string, next: string): string {
+  const fn = binding().sseAppendBoundedText;
+  if (typeof fn !== "function") throw new Error("native sseAppendBoundedText not available (rebuild addon)");
+  return fn(current, next);
+}
+
+/** SSE: recursively check whether a delta-like value contains meaningful content. */
+export function hasActiveDeltaValueNative(value: unknown): boolean {
+  const fn = binding().sseHasActiveDeltaValue;
+  if (typeof fn !== "function") throw new Error("native sseHasActiveDeltaValue not available (rebuild addon)");
+  return fn(JSON.stringify(value));
+}
+
+/** SSE: fix invalid OpenAI-style chunk id deterministically. */
+export function fixInvalidIdNative(
+  parsed: unknown,
+  fallbackId?: string | null
+): { value: unknown; changed: boolean } {
+  const fn = binding().sseFixInvalidId;
+  if (typeof fn !== "function") throw new Error("native sseFixInvalidId not available (rebuild addon)");
+  return JSON.parse(fn(JSON.stringify(parsed), fallbackId ?? null)) as { value: unknown; changed: boolean };
+}
+
+/** SSE: build a deterministic synthetic OpenAI-shaped chat completion chunk. */
+export function buildSyntheticChatChunkNative(
+  id: string,
+  model: string,
+  created: number,
+  delta: unknown,
+  finishReason?: unknown | null
+): unknown {
+  const fn = binding().sseBuildSyntheticChatChunk;
+  if (typeof fn !== "function") throw new Error("native sseBuildSyntheticChatChunk not available (rebuild addon)");
+  const finish = finishReason === undefined || finishReason === null ? null : JSON.stringify(finishReason);
+  return JSON.parse(fn(id, model, created, JSON.stringify(delta), finish)) as unknown;
 }
 
 /** Low-level access for advanced/experimental use. */

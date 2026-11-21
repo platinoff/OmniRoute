@@ -509,6 +509,100 @@ pub fn unwrap_gemini_chunk(parsed: &Value) -> Value {
     parsed.clone()
 }
 
+/// Maximum retained length for bounded streamed text accumulation.
+pub const STREAM_SUMMARY_TEXT_LIMIT: usize = 64 * 1024;
+
+/// Append `next` to `current`, keeping only the tail once the limit is reached.
+pub fn append_bounded_text(current: &str, next: &str) -> String {
+    if next.is_empty() {
+        return current.to_string();
+    }
+    if current.len() >= STREAM_SUMMARY_TEXT_LIMIT {
+        let keep = STREAM_SUMMARY_TEXT_LIMIT.saturating_sub(next.len());
+        if keep == 0 {
+            let start = next.len().saturating_sub(STREAM_SUMMARY_TEXT_LIMIT);
+            return next[start..].to_string();
+        }
+        let cur_start = current.len().saturating_sub(keep);
+        let mut out = String::with_capacity(keep + next.len().min(STREAM_SUMMARY_TEXT_LIMIT));
+        out.push_str(&current[cur_start..]);
+        out.push_str(next);
+        return out;
+    }
+    let mut combined = String::with_capacity(current.len() + next.len());
+    combined.push_str(current);
+    combined.push_str(next);
+    if combined.len() <= STREAM_SUMMARY_TEXT_LIMIT {
+        return combined;
+    }
+    let start = combined.len().saturating_sub(STREAM_SUMMARY_TEXT_LIMIT);
+    combined[start..].to_string()
+}
+
+/// Recursively check whether a delta-like value contains meaningful content.
+pub fn has_active_delta_value(value: &Value) -> bool {
+    match value {
+        Value::String(s) => !s.is_empty(),
+        Value::Array(arr) => arr.iter().any(has_active_delta_value),
+        Value::Object(map) => map.values().any(has_active_delta_value),
+        Value::Null => false,
+        _ => true,
+    }
+}
+
+/// Fix invalid OpenAI-style chunk id deterministically.
+/// Replaces ids that are `"chat"`, `"completion"`, or shorter than 8 chars.
+/// Fallback resolution: `extend_fields.requestId` -> `extend_fields.traceId` -> `fallback_id` -> `"0"`.
+/// Returns `(updated_value, changed)`.
+pub fn fix_invalid_id(parsed: &Value, fallback_id: Option<&str>) -> (Value, bool) {
+    let Some(obj) = parsed.as_object() else {
+        return (parsed.clone(), false);
+    };
+    let Some(id) = obj.get("id").and_then(|v| v.as_str()) else {
+        return (parsed.clone(), false);
+    };
+    if !(id == "chat" || id == "completion" || id.len() < 8) {
+        return (parsed.clone(), false);
+    }
+
+    let ext_fallback = obj
+        .get("extend_fields")
+        .and_then(|v| v.as_object())
+        .and_then(|ext| {
+            ext.get("requestId")
+                .or_else(|| ext.get("traceId"))
+                .and_then(|v| v.as_str())
+        });
+    let resolved = ext_fallback.or(fallback_id).unwrap_or("0");
+    let new_id = format!("chatcmpl-{resolved}");
+
+    let mut out = obj.clone();
+    out.insert("id".to_string(), Value::String(new_id));
+    (Value::Object(out), true)
+}
+
+/// Build a deterministic synthetic OpenAI-shaped chat completion chunk.
+/// Caller supplies `id`, `created` (unix seconds), and `model` explicitly.
+pub fn build_synthetic_chat_chunk(
+    id: &str,
+    model: &str,
+    created: i64,
+    delta: &Value,
+    finish_reason: Option<&Value>,
+) -> Value {
+    json!({
+        "id": id,
+        "object": "chat.completion.chunk",
+        "created": created,
+        "model": model,
+        "choices": [{
+            "index": 0,
+            "delta": delta,
+            "finish_reason": finish_reason.cloned().unwrap_or(Value::Null),
+        }]
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -731,5 +825,76 @@ mod tests {
             normalize_sse_data_lines(&lines),
             vec!["data: {\"a\":1}".to_string(), "".to_string()]
         );
+    }
+
+    #[test]
+    fn bounded_text_append_keeps_tail() {
+        assert_eq!(append_bounded_text("ab", ""), "ab");
+        assert_eq!(append_bounded_text("ab", "cd"), "abcd");
+        let big = "x".repeat(STREAM_SUMMARY_TEXT_LIMIT);
+        assert_eq!(
+            append_bounded_text(&big, "y").len(),
+            STREAM_SUMMARY_TEXT_LIMIT
+        );
+        assert!(append_bounded_text(&big, "y").ends_with('y'));
+        let over = "z".repeat(STREAM_SUMMARY_TEXT_LIMIT + 10);
+        assert_eq!(
+            append_bounded_text("a", &over).len(),
+            STREAM_SUMMARY_TEXT_LIMIT
+        );
+    }
+
+    #[test]
+    fn active_delta_value_detection() {
+        assert!(!has_active_delta_value(&json!("")));
+        assert!(has_active_delta_value(&json!("hi")));
+        assert!(has_active_delta_value(&json!(1)));
+        assert!(!has_active_delta_value(&json!(null)));
+        assert!(has_active_delta_value(&json!(["", "x"])));
+        assert!(!has_active_delta_value(&json!(["", null])));
+        assert!(has_active_delta_value(&json!({"a": {"b": "x"}})));
+        assert!(!has_active_delta_value(&json!({"a": {"b": ""}})));
+    }
+
+    #[test]
+    fn fixes_invalid_ids_deterministically() {
+        let (v, changed) = fix_invalid_id(&json!({"id":"chat","x":1}), Some("fb"));
+        assert!(changed);
+        assert_eq!(v["id"], "chatcmpl-fb");
+
+        let (v, changed) = fix_invalid_id(
+            &json!({"id":"short","extend_fields":{"requestId":"r1"}}),
+            Some("fb"),
+        );
+        assert!(changed);
+        assert_eq!(v["id"], "chatcmpl-r1");
+
+        let (v, changed) = fix_invalid_id(&json!({"id":"chatcmpl-validid"}), Some("fb"));
+        assert!(!changed);
+        assert_eq!(v["id"], "chatcmpl-validid");
+
+        let (v, changed) = fix_invalid_id(&json!({"id":"completion"}), None);
+        assert!(changed);
+        assert_eq!(v["id"], "chatcmpl-0");
+    }
+
+    #[test]
+    fn builds_synthetic_chat_chunk_deterministically() {
+        let chunk = build_synthetic_chat_chunk(
+            "chatcmpl-test",
+            "gpt-x",
+            123,
+            &json!({"content":"hi"}),
+            Some(&json!("stop")),
+        );
+        assert_eq!(chunk["id"], "chatcmpl-test");
+        assert_eq!(chunk["object"], "chat.completion.chunk");
+        assert_eq!(chunk["created"], 123);
+        assert_eq!(chunk["model"], "gpt-x");
+        assert_eq!(chunk["choices"][0]["delta"]["content"], "hi");
+        assert_eq!(chunk["choices"][0]["finish_reason"], "stop");
+
+        let chunk2 = build_synthetic_chat_chunk("id", "m", 0, &json!({}), None);
+        assert!(chunk2["choices"][0]["finish_reason"].is_null());
     }
 }

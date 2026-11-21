@@ -156,6 +156,141 @@ pub fn sse_normalize_lines_batch(lines_json: String) -> Result<String, JsValue> 
     serde_json::to_string(&out).map_err(|e| js_err("sseNormalizeLinesBatch stringify", e))
 }
 
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = sseAppendBoundedText)]
+pub fn sse_append_bounded_text(current: String, next: String) -> String {
+    omniroute_sse::append_bounded_text(&current, &next)
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = sseHasActiveDeltaValue)]
+pub fn sse_has_active_delta_value(value_json: String) -> Result<bool, JsValue> {
+    let value: serde_json::Value =
+        serde_json::from_str(&value_json).map_err(|e| js_err("sseHasActiveDeltaValue parse", e))?;
+    Ok(omniroute_sse::has_active_delta_value(&value))
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = sseFixInvalidId)]
+pub fn sse_fix_invalid_id(
+    parsed_json: String,
+    fallback_id: Option<String>,
+) -> Result<String, JsValue> {
+    let value: serde_json::Value =
+        serde_json::from_str(&parsed_json).map_err(|e| js_err("sseFixInvalidId parse", e))?;
+    let (updated, changed) = omniroute_sse::fix_invalid_id(&value, fallback_id.as_deref());
+    let out = serde_json::json!({ "value": updated, "changed": changed });
+    serde_json::to_string(&out).map_err(|e| js_err("sseFixInvalidId stringify", e))
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = sseBuildSyntheticChatChunk)]
+pub fn sse_build_synthetic_chat_chunk(
+    id: String,
+    model: String,
+    created: f64,
+    delta_json: String,
+    finish_reason_json: Option<String>,
+) -> Result<String, JsValue> {
+    let delta: serde_json::Value = serde_json::from_str(&delta_json)
+        .map_err(|e| js_err("sseBuildSyntheticChatChunk delta parse", e))?;
+    let finish_reason: Option<serde_json::Value> = match finish_reason_json {
+        None => None,
+        Some(s) => Some(
+            serde_json::from_str(&s)
+                .map_err(|e| js_err("sseBuildSyntheticChatChunk finishReason parse", e))?,
+        ),
+    };
+    let chunk = omniroute_sse::build_synthetic_chat_chunk(
+        &id,
+        &model,
+        created as i64,
+        &delta,
+        finish_reason.as_ref(),
+    );
+    serde_json::to_string(&chunk).map_err(|e| js_err("sseBuildSyntheticChatChunk stringify", e))
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = SseDataLineNormalizerState)]
+pub struct SseDataLineNormalizerStateWasm {
+    inner: omniroute_sse::SseDataLineNormalizer,
+}
+
+#[cfg(target_arch = "wasm32")]
+impl Default for SseDataLineNormalizerStateWasm {
+    fn default() -> Self {
+        Self {
+            inner: omniroute_sse::SseDataLineNormalizer::new(),
+        }
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_class = SseDataLineNormalizerState)]
+impl SseDataLineNormalizerStateWasm {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    #[wasm_bindgen(js_name = hasPending)]
+    pub fn has_pending(&self) -> bool {
+        self.inner.has_pending()
+    }
+
+    #[wasm_bindgen(js_name = normalize)]
+    pub fn normalize(&mut self, lines: Vec<String>) -> Vec<String> {
+        self.inner.normalize(&lines)
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = SseEventPrefixBufferState)]
+pub struct SseEventPrefixBufferStateWasm {
+    inner: omniroute_sse::SseEventPrefixBuffer,
+}
+
+#[cfg(target_arch = "wasm32")]
+impl Default for SseEventPrefixBufferStateWasm {
+    fn default() -> Self {
+        Self {
+            inner: omniroute_sse::SseEventPrefixBuffer::new(),
+        }
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_class = SseEventPrefixBufferState)]
+impl SseEventPrefixBufferStateWasm {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn clear(&mut self) {
+        self.inner.clear();
+    }
+
+    #[wasm_bindgen(js_name = eventType)]
+    pub fn event_type(&self) -> String {
+        self.inner.event_type()
+    }
+
+    pub fn flush(&mut self) -> String {
+        self.inner.flush()
+    }
+
+    #[wasm_bindgen(js_name = prefixData)]
+    pub fn prefix_data(&mut self, output: String, line: String) -> String {
+        self.inner.prefix_data(&output, &line)
+    }
+
+    pub fn remember(&mut self, line: String) {
+        self.inner.remember(&line);
+    }
+}
+
 // ---------- Compression ----------
 
 #[cfg(target_arch = "wasm32")]

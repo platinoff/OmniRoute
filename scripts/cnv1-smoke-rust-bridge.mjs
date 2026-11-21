@@ -13,11 +13,15 @@
  */
 
 import {
+  appendBoundedTextNative,
+  buildSyntheticChatChunkNative,
   decodeGenericNative,
   encodeGenericNative,
   extractSseDataLineNative,
+  fixInvalidIdNative,
   formatSseNative,
   getRustBridgeLoadError,
+  hasActiveDeltaValueNative,
   hasOpenaiFinishReasonNative,
   isCompressionExcludedNative,
   isKnownNonClaudeStreamPayloadNative,
@@ -91,6 +95,12 @@ function main() {
   assert(JSON.stringify(unwrapped) === JSON.stringify({ candidates: [{ content: { parts: [{ text: "x" }] } }] }), "sse unwrap mismatch");
   const normalized = normalizeSseLinesBatchNative(["data: {\"a\":", "data: 1}", ""]);
   assert(JSON.stringify(normalized) === JSON.stringify(["data: {\"a\":1}", ""]), "sse normalize batch mismatch");
+  assert(appendBoundedTextNative("ab", "cd") === "abcd", "sse append bounded mismatch");
+  assert(hasActiveDeltaValueNative({ a: { b: "x" } }) === true, "sse active delta mismatch");
+  const fixed = fixInvalidIdNative({ id: "chat", extend_fields: { requestId: "r1" } }, "fb");
+  assert(fixed.changed === true && fixed.value?.id === "chatcmpl-r1", "sse fix id mismatch");
+  const synthetic = buildSyntheticChatChunkNative("chatcmpl-x", "m", 1, { content: "hi" }, "stop");
+  assert(synthetic?.id === "chatcmpl-x" && synthetic?.created === 1, "sse synthetic chunk mismatch");
   console.log("sse_ok");
 
   console.log("CNV1_RUST_BRIDGE_SMOKE_OK");

@@ -8,10 +8,11 @@ use omniroute_compression::{
 };
 use omniroute_gcf::{decode_generic, encode_generic, GenericOptions};
 use omniroute_sse::{
-    extract_sse_data_line, format_sse, has_openai_finish_reason,
+    append_bounded_text, build_synthetic_chat_chunk, extract_sse_data_line, fix_invalid_id,
+    format_sse, has_active_delta_value, has_openai_finish_reason,
     is_known_non_claude_stream_payload, is_openai_choices_payload, normalize_sse_data_lines,
     parse_sse_data_lines, parse_sse_data_payload, parse_sse_line, strip_ansi_codes,
-    unwrap_gemini_chunk,
+    unwrap_gemini_chunk, SseDataLineNormalizer, SseEventPrefixBuffer,
 };
 use serde_json::Value;
 
@@ -209,4 +210,132 @@ pub fn sse_normalize_lines_batch_js(lines_json: String) -> Result<String> {
         .map_err(|e| err_msg("sseNormalizeLinesBatch parse", e))?;
     let out = normalize_sse_data_lines(&lines);
     serde_json::to_string(&out).map_err(|e| err_msg("sseNormalizeLinesBatch stringify", e))
+}
+
+/// Append bounded streamed text (keeps tail up to 64 KiB).
+#[napi(js_name = "sseAppendBoundedText")]
+pub fn sse_append_bounded_text_js(current: String, next: String) -> String {
+    append_bounded_text(&current, &next)
+}
+
+/// Recursively check whether a delta-like value contains meaningful content.
+#[napi(js_name = "sseHasActiveDeltaValue")]
+pub fn sse_has_active_delta_value_js(value_json: String) -> Result<bool> {
+    let value: Value = serde_json::from_str(&value_json)
+        .map_err(|e| err_msg("sseHasActiveDeltaValue parse", e))?;
+    Ok(has_active_delta_value(&value))
+}
+
+/// Fix invalid OpenAI-style chunk id deterministically.
+/// Returns JSON string `{ "value": <object>, "changed": boolean }`.
+#[napi(js_name = "sseFixInvalidId")]
+pub fn sse_fix_invalid_id_js(parsed_json: String, fallback_id: Option<String>) -> Result<String> {
+    let value: Value =
+        serde_json::from_str(&parsed_json).map_err(|e| err_msg("sseFixInvalidId parse", e))?;
+    let (updated, changed) = fix_invalid_id(&value, fallback_id.as_deref());
+    let out = serde_json::json!({ "value": updated, "changed": changed });
+    serde_json::to_string(&out).map_err(|e| err_msg("sseFixInvalidId stringify", e))
+}
+
+/// Build a deterministic synthetic OpenAI-shaped chat completion chunk.
+/// `delta_json` and optional `finish_reason_json` are JSON values.
+#[napi(js_name = "sseBuildSyntheticChatChunk")]
+pub fn sse_build_synthetic_chat_chunk_js(
+    id: String,
+    model: String,
+    created: f64,
+    delta_json: String,
+    finish_reason_json: Option<String>,
+) -> Result<String> {
+    let delta: Value = serde_json::from_str(&delta_json)
+        .map_err(|e| err_msg("sseBuildSyntheticChatChunk delta parse", e))?;
+    let finish_reason: Option<Value> = match finish_reason_json {
+        None => None,
+        Some(s) => Some(
+            serde_json::from_str(&s)
+                .map_err(|e| err_msg("sseBuildSyntheticChatChunk finishReason parse", e))?,
+        ),
+    };
+    let chunk =
+        build_synthetic_chat_chunk(&id, &model, created as i64, &delta, finish_reason.as_ref());
+    serde_json::to_string(&chunk).map_err(|e| err_msg("sseBuildSyntheticChatChunk stringify", e))
+}
+
+/// Stateful SSE data-line normalizer (opt-in wrapper).
+#[napi]
+pub struct SseDataLineNormalizerState {
+    inner: SseDataLineNormalizer,
+}
+
+#[napi]
+impl SseDataLineNormalizerState {
+    #[napi(constructor)]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    #[napi]
+    pub fn has_pending(&self) -> bool {
+        self.inner.has_pending()
+    }
+
+    #[napi]
+    pub fn normalize(&mut self, lines: Vec<String>) -> Vec<String> {
+        self.inner.normalize(&lines)
+    }
+}
+
+impl Default for SseDataLineNormalizerState {
+    fn default() -> Self {
+        Self {
+            inner: SseDataLineNormalizer::new(),
+        }
+    }
+}
+
+/// Stateful SSE event-prefix buffer (opt-in wrapper).
+#[napi]
+pub struct SseEventPrefixBufferState {
+    inner: SseEventPrefixBuffer,
+}
+
+#[napi]
+impl SseEventPrefixBufferState {
+    #[napi(constructor)]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    #[napi]
+    pub fn clear(&mut self) {
+        self.inner.clear();
+    }
+
+    #[napi]
+    pub fn event_type(&self) -> String {
+        self.inner.event_type()
+    }
+
+    #[napi]
+    pub fn flush(&mut self) -> String {
+        self.inner.flush()
+    }
+
+    #[napi]
+    pub fn prefix_data(&mut self, output: String, line: String) -> String {
+        self.inner.prefix_data(&output, &line)
+    }
+
+    #[napi]
+    pub fn remember(&mut self, line: String) {
+        self.inner.remember(&line);
+    }
+}
+
+impl Default for SseEventPrefixBufferState {
+    fn default() -> Self {
+        Self {
+            inner: SseEventPrefixBuffer::new(),
+        }
+    }
 }
