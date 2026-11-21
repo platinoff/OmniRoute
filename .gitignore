@@ -258,3 +258,6 @@ docker-compose.yml.bak
 /target/
 **/target/
 Cargo.lock
+
+# Opt-in WASM bindings build output (CNV-1)
+crates/omniroute-wasm/pkg/

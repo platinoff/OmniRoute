@@ -5,6 +5,7 @@ members = [
     "crates/omniroute-compression",
     "crates/omniroute-sse",
     "crates/omniroute-napi",
+    "crates/omniroute-wasm",
 ]
 
 [workspace.package]
@@ -19,4 +20,5 @@ serde_json = { version = "1", features = ["preserve_order"] }
 napi = { version = "2", default-features = false, features = ["napi4", "serde-json"] }
 napi-derive = "2"
 napi-build = "2"
+wasm-bindgen = "=0.2.108"
 
