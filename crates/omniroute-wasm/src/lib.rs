@@ -155,3 +155,57 @@ pub fn sse_normalize_lines_batch(lines_json: String) -> Result<String, JsValue> 
     let out = omniroute_sse::normalize_sse_data_lines(&lines);
     serde_json::to_string(&out).map_err(|e| js_err("sseNormalizeLinesBatch stringify", e))
 }
+
+// ---------- Compression ----------
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = validateCompressionJson)]
+pub fn validate_compression_json(original: String, compressed: String) -> Result<String, JsValue> {
+    let res = omniroute_compression::validate_compression(&original, &compressed);
+    let out = serde_json::json!({
+        "valid": res.valid,
+        "errors": res.errors,
+        "warnings": res.warnings,
+        "fallbackApplied": res.fallback_applied,
+    });
+    serde_json::to_string(&out).map_err(|e| js_err("validateCompressionJson stringify", e))
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = validateRulePackJson)]
+pub fn validate_rule_pack_json(json: String) -> Result<String, JsValue> {
+    let value: serde_json::Value =
+        serde_json::from_str(&json).map_err(|e| js_err("validateRulePackJson parse", e))?;
+    let res = omniroute_compression::validate_rule_pack(&value);
+    let out = serde_json::json!({
+        "valid": res.valid,
+        "errors": res.errors,
+    });
+    serde_json::to_string(&out).map_err(|e| js_err("validateRulePackJson stringify", e))
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = isCompressionExcluded)]
+pub fn is_compression_excluded_js(
+    provider: Option<String>,
+    model: Option<String>,
+    exclusions_json: String,
+) -> Result<bool, JsValue> {
+    let raw: Vec<serde_json::Value> = serde_json::from_str(&exclusions_json)
+        .map_err(|e| js_err("isCompressionExcluded parse", e))?;
+    let mut exclusions: omniroute_compression::CompressionExclusions = Vec::new();
+    let mut seen = std::collections::HashSet::new();
+    for v in raw {
+        if let serde_json::Value::String(s) = v {
+            let trimmed = s.trim().to_lowercase();
+            if !trimmed.is_empty() && seen.insert(trimmed.clone()) {
+                exclusions.push(trimmed);
+            }
+        }
+    }
+    Ok(omniroute_compression::is_compression_excluded(
+        provider.as_deref(),
+        model.as_deref(),
+        &exclusions,
+    ))
+}

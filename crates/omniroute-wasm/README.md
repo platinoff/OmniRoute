@@ -18,6 +18,9 @@ Not wired into default omniroute runtime/build/test flows.
 - `sseIsKnownNonClaudeStreamPayload(parsedJson, eventType?) -> boolean`
 - `sseUnwrapGeminiChunk(parsedJson) -> string`
 - `sseNormalizeLinesBatch(linesJson) -> string`
+- `validateCompressionJson(original, compressed) -> string` (`{valid,errors,warnings,fallbackApplied}`)
+- `validateRulePackJson(json) -> string` (`{valid,errors}`)
+- `isCompressionExcluded(provider?, model?, exclusionsJson) -> boolean`
 
 ## Build (opt-in)
 

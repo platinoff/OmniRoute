@@ -16,6 +16,7 @@ wasm-bindgen = { workspace = true }
 serde_json = { workspace = true }
 omniroute-gcf = { path = "../omniroute-gcf" }
 omniroute-sse = { path = "../omniroute-sse" }
+omniroute-compression = { path = "../omniroute-compression" }
 
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = false
