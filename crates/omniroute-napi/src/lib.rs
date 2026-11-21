@@ -4,9 +4,13 @@
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use omniroute_compression::{
-    detect_compression_language, extract_text_content, is_compression_excluded, is_text_block,
-    list_supported_compression_languages, prune_by_score, replace_text_content, score_token,
-    validate_compression, validate_rule_pack, CompressionExclusions,
+    apply_caveman_output_mode, back_off_to_word_boundary, build_caveman_output_instruction,
+    collapse_newline_runs, detect_compression_language, extract_text_content,
+    is_compression_excluded, is_text_block, list_supported_compression_languages,
+    normalize_message_whitespace, prune_by_score, replace_text_content, score_token,
+    should_bypass_caveman_output_mode, trim_trailing_horizontal_whitespace, truncate_tool_content,
+    validate_compression, validate_rule_pack, CavemanOutputIntensity, CavemanOutputModeConfig,
+    CompressionExclusions,
 };
 use omniroute_gcf::{decode_generic, encode_generic, GenericOptions};
 use omniroute_sse::{
@@ -351,6 +355,104 @@ pub fn compression_score_token(token: String) -> f64 {
 #[napi(js_name = "compressionPruneByScore")]
 pub fn compression_prune_by_score(text: String, keep_rate: f64, min_score: f64) -> String {
     prune_by_score(&text, keep_rate, min_score)
+}
+
+// ---------- Compression output-mode + lite text primitives (W19+, opt-in) ----------
+
+fn parse_output_intensity(intensity: Option<String>) -> CavemanOutputIntensity {
+    match intensity.as_deref() {
+        Some("full") => CavemanOutputIntensity::Full,
+        Some("ultra") => CavemanOutputIntensity::Ultra,
+        _ => CavemanOutputIntensity::Lite,
+    }
+}
+
+fn output_mode_config(
+    enabled: bool,
+    intensity: Option<String>,
+    auto_clarity: Option<bool>,
+) -> CavemanOutputModeConfig {
+    CavemanOutputModeConfig {
+        enabled,
+        intensity: parse_output_intensity(intensity),
+        auto_clarity: auto_clarity.unwrap_or(true),
+    }
+}
+
+/// Build caveman output instruction (marker + localized/intensity text).
+#[napi(js_name = "compressionBuildCavemanOutputInstruction")]
+pub fn compression_build_caveman_output_instruction(
+    enabled: bool,
+    intensity: Option<String>,
+    auto_clarity: Option<bool>,
+    language: Option<String>,
+) -> String {
+    let cfg = output_mode_config(enabled, intensity, auto_clarity);
+    build_caveman_output_instruction(&cfg, language.as_deref().unwrap_or("en"))
+}
+
+/// Return bypass reason for caveman output mode based on last up to 3 messages, or null.
+/// `messages_json` must be a JSON array of message objects.
+#[napi(js_name = "compressionShouldBypassCavemanOutputMode")]
+pub fn compression_should_bypass_caveman_output_mode(
+    messages_json: String,
+) -> Result<Option<String>> {
+    let messages: Vec<Value> = serde_json::from_str(&messages_json)
+        .map_err(|e| err_msg("compressionShouldBypassCavemanOutputMode parse", e))?;
+    Ok(should_bypass_caveman_output_mode(&messages))
+}
+
+/// Apply caveman output mode injection to a request body JSON.
+/// Returns JSON string `{ "body": <object>, "applied": boolean, "skippedReason": string|null }`.
+#[napi(js_name = "compressionApplyCavemanOutputMode")]
+pub fn compression_apply_caveman_output_mode(
+    body_json: String,
+    enabled: bool,
+    intensity: Option<String>,
+    auto_clarity: Option<bool>,
+    language: Option<String>,
+) -> Result<String> {
+    let body: Value = serde_json::from_str(&body_json)
+        .map_err(|e| err_msg("compressionApplyCavemanOutputMode parse", e))?;
+    let cfg = output_mode_config(enabled, intensity, auto_clarity);
+    let res = apply_caveman_output_mode(&body, Some(cfg), language.as_deref().unwrap_or("en"));
+    let out = serde_json::json!({
+        "body": res.body,
+        "applied": res.applied,
+        "skippedReason": res.skipped_reason,
+    });
+    serde_json::to_string(&out)
+        .map_err(|e| err_msg("compressionApplyCavemanOutputMode stringify", e))
+}
+
+/// Trim trailing horizontal whitespace (space/tab) from a line.
+#[napi(js_name = "compressionTrimTrailingHorizontalWhitespace")]
+pub fn compression_trim_trailing_horizontal_whitespace(line: String) -> String {
+    trim_trailing_horizontal_whitespace(&line).to_string()
+}
+
+/// Collapse runs of newlines to at most two consecutive newlines.
+#[napi(js_name = "compressionCollapseNewlineRuns")]
+pub fn compression_collapse_newline_runs(content: String) -> String {
+    collapse_newline_runs(&content)
+}
+
+/// Normalize message whitespace (collapse newline runs + trim trailing horizontal whitespace per line).
+#[napi(js_name = "compressionNormalizeMessageWhitespace")]
+pub fn compression_normalize_message_whitespace(content: String) -> String {
+    normalize_message_whitespace(&content)
+}
+
+/// Adjust a cut index to a nearby word boundary (byte offset, slice-end semantics).
+#[napi(js_name = "compressionBackOffToWordBoundary")]
+pub fn compression_back_off_to_word_boundary(content: String, cut_byte: u32) -> u32 {
+    back_off_to_word_boundary(&content, cut_byte as usize) as u32
+}
+
+/// Truncate tool content to `max_len` with word-boundary backoff and truncation marker.
+#[napi(js_name = "compressionTruncateToolContent")]
+pub fn compression_truncate_tool_content(content: String, max_len: u32) -> String {
+    truncate_tool_content(&content, max_len as usize)
 }
 
 /// Stateful SSE event-prefix buffer (opt-in wrapper).

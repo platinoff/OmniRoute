@@ -15,13 +15,21 @@
 import {
   appendBoundedTextNative,
   buildSyntheticChatChunkNative,
+  compressionApplyCavemanOutputModeNative,
+  compressionBackOffToWordBoundaryNative,
+  compressionBuildCavemanOutputInstructionNative,
+  compressionCollapseNewlineRunsNative,
   compressionDetectLanguageNative,
   compressionExtractTextContentNative,
   compressionIsTextBlockNative,
   compressionListSupportedLanguagesNative,
+  compressionNormalizeMessageWhitespaceNative,
   compressionPruneByScoreNative,
   compressionReplaceTextContentNative,
   compressionScoreTokenNative,
+  compressionShouldBypassCavemanOutputModeNative,
+  compressionTrimTrailingHorizontalWhitespaceNative,
+  compressionTruncateToolContentNative,
   decodeGenericNative,
   encodeGenericNative,
   extractSseDataLineNative,
@@ -133,6 +141,29 @@ function main() {
   const pruned = compressionPruneByScoreNative("This is a very simple test for compression", 1.0, 0.3);
   assert(pruned === "This is a very simple test for compression", "compression prune mismatch");
   console.log("compression_core_ok");
+
+  // Compression output-mode + lite text primitives (W19+, opt-in)
+  const instr = compressionBuildCavemanOutputInstructionNative(true, "full", false, "en");
+  assert(instr.includes("[OmniRoute Caveman Output Mode]") && instr.includes("smart caveman"), "output mode instruction mismatch");
+  assert(
+    compressionShouldBypassCavemanOutputModeNative([{ role: "user", content: "please delete the database" }]) ===
+      "irreversible_action",
+    "output mode bypass mismatch"
+  );
+  const applied = compressionApplyCavemanOutputModeNative(
+    { messages: [{ role: "user", content: "hi" }] },
+    true,
+    "lite",
+    false,
+    "en"
+  );
+  assert(applied.applied === true && applied.body?.messages?.[0]?.role === "system", "output mode apply mismatch");
+  assert(compressionTrimTrailingHorizontalWhitespaceNative("a \t") === "a", "lite trim mismatch");
+  assert(compressionCollapseNewlineRunsNative("a\n\n\nb") === "a\n\nb", "lite newline collapse mismatch");
+  assert(compressionNormalizeMessageWhitespaceNative("a \n\n\nb\t") === "a\n\nb", "lite normalize mismatch");
+  const trunc = compressionTruncateToolContentNative("hello wonderful world", 9);
+  assert(trunc.startsWith("hello ") && trunc.endsWith("\n...[truncated]"), "lite truncate mismatch");
+  console.log("compression_output_lite_ok");
 
   console.log("CNV1_RUST_BRIDGE_SMOKE_OK");
 }

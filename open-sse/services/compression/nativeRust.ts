@@ -65,6 +65,26 @@ type NativeBinding = {
   compressionListSupportedLanguages?(): string[];
   compressionScoreToken?(token: string): number;
   compressionPruneByScore?(text: string, keepRate: number, minScore: number): string;
+  // Compression output-mode + lite text primitives (W19+, opt-in)
+  compressionBuildCavemanOutputInstruction?(
+    enabled: boolean,
+    intensity?: string | null,
+    autoClarity?: boolean | null,
+    language?: string | null
+  ): string;
+  compressionShouldBypassCavemanOutputMode?(messagesJson: string): string | null;
+  compressionApplyCavemanOutputMode?(
+    bodyJson: string,
+    enabled: boolean,
+    intensity?: string | null,
+    autoClarity?: boolean | null,
+    language?: string | null
+  ): string;
+  compressionTrimTrailingHorizontalWhitespace?(line: string): string;
+  compressionCollapseNewlineRuns?(content: string): string;
+  compressionNormalizeMessageWhitespace?(content: string): string;
+  compressionBackOffToWordBoundary?(content: string, cutByte: number): number;
+  compressionTruncateToolContent?(content: string, maxLen: number): string;
 };
 
 let cachedBinding: NativeBinding | null | undefined;
@@ -344,6 +364,77 @@ export function compressionPruneByScoreNative(text: string, keepRate: number, mi
   const fn = binding().compressionPruneByScore;
   if (typeof fn !== "function") throw new Error("native compressionPruneByScore not available (rebuild addon)");
   return fn(text, keepRate, minScore);
+}
+
+// ---------- Compression output-mode + lite text primitives (W19+, opt-in) ----------
+
+export function compressionBuildCavemanOutputInstructionNative(
+  enabled: boolean,
+  intensity?: "lite" | "full" | "ultra" | null,
+  autoClarity?: boolean | null,
+  language?: string | null
+): string {
+  const fn = binding().compressionBuildCavemanOutputInstruction;
+  if (typeof fn !== "function")
+    throw new Error("native compressionBuildCavemanOutputInstruction not available (rebuild addon)");
+  return fn(enabled, intensity ?? null, autoClarity ?? null, language ?? null);
+}
+
+export function compressionShouldBypassCavemanOutputModeNative(messages: unknown[]): string | null {
+  const fn = binding().compressionShouldBypassCavemanOutputMode;
+  if (typeof fn !== "function")
+    throw new Error("native compressionShouldBypassCavemanOutputMode not available (rebuild addon)");
+  return fn(JSON.stringify(messages));
+}
+
+export function compressionApplyCavemanOutputModeNative(
+  body: unknown,
+  enabled: boolean,
+  intensity?: "lite" | "full" | "ultra" | null,
+  autoClarity?: boolean | null,
+  language?: string | null
+): { body: unknown; applied: boolean; skippedReason: string | null } {
+  const fn = binding().compressionApplyCavemanOutputMode;
+  if (typeof fn !== "function")
+    throw new Error("native compressionApplyCavemanOutputMode not available (rebuild addon)");
+  return JSON.parse(fn(JSON.stringify(body), enabled, intensity ?? null, autoClarity ?? null, language ?? null)) as {
+    body: unknown;
+    applied: boolean;
+    skippedReason: string | null;
+  };
+}
+
+export function compressionTrimTrailingHorizontalWhitespaceNative(line: string): string {
+  const fn = binding().compressionTrimTrailingHorizontalWhitespace;
+  if (typeof fn !== "function")
+    throw new Error("native compressionTrimTrailingHorizontalWhitespace not available (rebuild addon)");
+  return fn(line);
+}
+
+export function compressionCollapseNewlineRunsNative(content: string): string {
+  const fn = binding().compressionCollapseNewlineRuns;
+  if (typeof fn !== "function") throw new Error("native compressionCollapseNewlineRuns not available (rebuild addon)");
+  return fn(content);
+}
+
+export function compressionNormalizeMessageWhitespaceNative(content: string): string {
+  const fn = binding().compressionNormalizeMessageWhitespace;
+  if (typeof fn !== "function")
+    throw new Error("native compressionNormalizeMessageWhitespace not available (rebuild addon)");
+  return fn(content);
+}
+
+export function compressionBackOffToWordBoundaryNative(content: string, cutByte: number): number {
+  const fn = binding().compressionBackOffToWordBoundary;
+  if (typeof fn !== "function")
+    throw new Error("native compressionBackOffToWordBoundary not available (rebuild addon)");
+  return fn(content, cutByte);
+}
+
+export function compressionTruncateToolContentNative(content: string, maxLen: number): string {
+  const fn = binding().compressionTruncateToolContent;
+  if (typeof fn !== "function") throw new Error("native compressionTruncateToolContent not available (rebuild addon)");
+  return fn(content, maxLen);
 }
 
 /** Low-level access for advanced/experimental use. */

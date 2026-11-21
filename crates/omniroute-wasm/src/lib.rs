@@ -403,3 +403,107 @@ pub fn compression_score_token(token: String) -> f64 {
 pub fn compression_prune_by_score(text: String, keep_rate: f64, min_score: f64) -> String {
     omniroute_compression::prune_by_score(&text, keep_rate, min_score)
 }
+
+// ---------- Compression output-mode + lite text primitives (W19+, opt-in) ----------
+
+#[cfg(target_arch = "wasm32")]
+fn parse_output_intensity(
+    intensity: Option<String>,
+) -> omniroute_compression::CavemanOutputIntensity {
+    match intensity.as_deref() {
+        Some("full") => omniroute_compression::CavemanOutputIntensity::Full,
+        Some("ultra") => omniroute_compression::CavemanOutputIntensity::Ultra,
+        _ => omniroute_compression::CavemanOutputIntensity::Lite,
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionBuildCavemanOutputInstruction)]
+pub fn compression_build_caveman_output_instruction(
+    enabled: bool,
+    intensity: Option<String>,
+    auto_clarity: Option<bool>,
+    language: Option<String>,
+) -> String {
+    let cfg = omniroute_compression::CavemanOutputModeConfig {
+        enabled,
+        intensity: parse_output_intensity(intensity),
+        auto_clarity: auto_clarity.unwrap_or(true),
+    };
+    omniroute_compression::build_caveman_output_instruction(
+        &cfg,
+        language.as_deref().unwrap_or("en"),
+    )
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionShouldBypassCavemanOutputMode)]
+pub fn compression_should_bypass_caveman_output_mode(
+    messages_json: String,
+) -> Result<Option<String>, JsValue> {
+    let messages: Vec<serde_json::Value> = serde_json::from_str(&messages_json)
+        .map_err(|e| js_err("compressionShouldBypassCavemanOutputMode parse", e))?;
+    Ok(omniroute_compression::should_bypass_caveman_output_mode(
+        &messages,
+    ))
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionApplyCavemanOutputMode)]
+pub fn compression_apply_caveman_output_mode(
+    body_json: String,
+    enabled: bool,
+    intensity: Option<String>,
+    auto_clarity: Option<bool>,
+    language: Option<String>,
+) -> Result<String, JsValue> {
+    let body: serde_json::Value = serde_json::from_str(&body_json)
+        .map_err(|e| js_err("compressionApplyCavemanOutputMode parse", e))?;
+    let cfg = omniroute_compression::CavemanOutputModeConfig {
+        enabled,
+        intensity: parse_output_intensity(intensity),
+        auto_clarity: auto_clarity.unwrap_or(true),
+    };
+    let res = omniroute_compression::apply_caveman_output_mode(
+        &body,
+        Some(cfg),
+        language.as_deref().unwrap_or("en"),
+    );
+    let out = serde_json::json!({
+        "body": res.body,
+        "applied": res.applied,
+        "skippedReason": res.skipped_reason,
+    });
+    serde_json::to_string(&out)
+        .map_err(|e| js_err("compressionApplyCavemanOutputMode stringify", e))
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionTrimTrailingHorizontalWhitespace)]
+pub fn compression_trim_trailing_horizontal_whitespace(line: String) -> String {
+    omniroute_compression::trim_trailing_horizontal_whitespace(&line).to_string()
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionCollapseNewlineRuns)]
+pub fn compression_collapse_newline_runs(content: String) -> String {
+    omniroute_compression::collapse_newline_runs(&content)
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionNormalizeMessageWhitespace)]
+pub fn compression_normalize_message_whitespace(content: String) -> String {
+    omniroute_compression::normalize_message_whitespace(&content)
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionBackOffToWordBoundary)]
+pub fn compression_back_off_to_word_boundary(content: String, cut_byte: u32) -> u32 {
+    omniroute_compression::back_off_to_word_boundary(&content, cut_byte as usize) as u32
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionTruncateToolContent)]
+pub fn compression_truncate_tool_content(content: String, max_len: u32) -> String {
+    omniroute_compression::truncate_tool_content(&content, max_len as usize)
+}
