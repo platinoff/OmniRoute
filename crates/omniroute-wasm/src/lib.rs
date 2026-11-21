@@ -344,3 +344,62 @@ pub fn is_compression_excluded_js(
         &exclusions,
     ))
 }
+
+// ---------- Compression core helpers (W17+, opt-in) ----------
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionIsTextBlock)]
+pub fn compression_is_text_block(value_json: String) -> Result<bool, JsValue> {
+    let value: serde_json::Value =
+        serde_json::from_str(&value_json).map_err(|e| js_err("compressionIsTextBlock parse", e))?;
+    Ok(omniroute_compression::is_text_block(&value))
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionExtractTextContent)]
+pub fn compression_extract_text_content(content_json: Option<String>) -> Result<String, JsValue> {
+    let value: Option<serde_json::Value> = match content_json {
+        None => None,
+        Some(s) => Some(
+            serde_json::from_str(&s)
+                .map_err(|e| js_err("compressionExtractTextContent parse", e))?,
+        ),
+    };
+    Ok(omniroute_compression::extract_text_content(value.as_ref()))
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionReplaceTextContent)]
+pub fn compression_replace_text_content(
+    msg_json: String,
+    new_text: String,
+) -> Result<String, JsValue> {
+    let msg: serde_json::Value = serde_json::from_str(&msg_json)
+        .map_err(|e| js_err("compressionReplaceTextContent parse", e))?;
+    let out = omniroute_compression::replace_text_content(&msg, &new_text);
+    serde_json::to_string(&out).map_err(|e| js_err("compressionReplaceTextContent stringify", e))
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionDetectLanguage)]
+pub fn compression_detect_language(text: String) -> String {
+    omniroute_compression::detect_compression_language(&text)
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionListSupportedLanguages)]
+pub fn compression_list_supported_languages() -> Vec<String> {
+    omniroute_compression::list_supported_compression_languages()
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionScoreToken)]
+pub fn compression_score_token(token: String) -> f64 {
+    omniroute_compression::score_token(&token)
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(js_name = compressionPruneByScore)]
+pub fn compression_prune_by_score(text: String, keep_rate: f64, min_score: f64) -> String {
+    omniroute_compression::prune_by_score(&text, keep_rate, min_score)
+}

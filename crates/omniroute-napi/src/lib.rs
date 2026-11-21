@@ -4,7 +4,9 @@
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use omniroute_compression::{
-    is_compression_excluded, validate_compression, validate_rule_pack, CompressionExclusions,
+    detect_compression_language, extract_text_content, is_compression_excluded, is_text_block,
+    list_supported_compression_languages, prune_by_score, replace_text_content, score_token,
+    validate_compression, validate_rule_pack, CompressionExclusions,
 };
 use omniroute_gcf::{decode_generic, encode_generic, GenericOptions};
 use omniroute_sse::{
@@ -291,6 +293,64 @@ impl Default for SseDataLineNormalizerState {
             inner: SseDataLineNormalizer::new(),
         }
     }
+}
+
+// ---------- Compression core helpers (W17+, opt-in) ----------
+
+/// True for text-like content blocks (`type` absent, `"text"`, or `"input_text"`).
+/// `value_json` is a JSON string representing the block/value.
+#[napi(js_name = "compressionIsTextBlock")]
+pub fn compression_is_text_block(value_json: String) -> Result<bool> {
+    let value: Value = serde_json::from_str(&value_json)
+        .map_err(|e| err_msg("compressionIsTextBlock parse", e))?;
+    Ok(is_text_block(&value))
+}
+
+/// Extract concatenated text content from message content (string/array/null JSON).
+#[napi(js_name = "compressionExtractTextContent")]
+pub fn compression_extract_text_content(content_json: Option<String>) -> Result<String> {
+    let value: Option<Value> = match content_json {
+        None => None,
+        Some(s) => Some(
+            serde_json::from_str(&s)
+                .map_err(|e| err_msg("compressionExtractTextContent parse", e))?,
+        ),
+    };
+    Ok(extract_text_content(value.as_ref()))
+}
+
+/// Replace text content in a message JSON while preserving non-text blocks.
+/// Returns updated message JSON string.
+#[napi(js_name = "compressionReplaceTextContent")]
+pub fn compression_replace_text_content(msg_json: String, new_text: String) -> Result<String> {
+    let msg: Value = serde_json::from_str(&msg_json)
+        .map_err(|e| err_msg("compressionReplaceTextContent parse", e))?;
+    let out = replace_text_content(&msg, &new_text);
+    serde_json::to_string(&out).map_err(|e| err_msg("compressionReplaceTextContent stringify", e))
+}
+
+/// Detect compression language (deterministic heuristics). Returns language code.
+#[napi(js_name = "compressionDetectLanguage")]
+pub fn compression_detect_language(text: String) -> String {
+    detect_compression_language(&text)
+}
+
+/// List supported compression language codes.
+#[napi(js_name = "compressionListSupportedLanguages")]
+pub fn compression_list_supported_languages() -> Vec<String> {
+    list_supported_compression_languages()
+}
+
+/// Score a token for information value (0.0 prune-candidate .. 1.0 keep).
+#[napi(js_name = "compressionScoreToken")]
+pub fn compression_score_token(token: String) -> f64 {
+    score_token(&token)
+}
+
+/// Prune tokens to achieve target keep rate. `keep_rate` in [0,1], `min_score` threshold.
+#[napi(js_name = "compressionPruneByScore")]
+pub fn compression_prune_by_score(text: String, keep_rate: f64, min_score: f64) -> String {
+    prune_by_score(&text, keep_rate, min_score)
 }
 
 /// Stateful SSE event-prefix buffer (opt-in wrapper).

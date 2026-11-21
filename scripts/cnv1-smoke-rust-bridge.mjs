@@ -15,6 +15,13 @@
 import {
   appendBoundedTextNative,
   buildSyntheticChatChunkNative,
+  compressionDetectLanguageNative,
+  compressionExtractTextContentNative,
+  compressionIsTextBlockNative,
+  compressionListSupportedLanguagesNative,
+  compressionPruneByScoreNative,
+  compressionReplaceTextContentNative,
+  compressionScoreTokenNative,
   decodeGenericNative,
   encodeGenericNative,
   extractSseDataLineNative,
@@ -102,6 +109,30 @@ function main() {
   const synthetic = buildSyntheticChatChunkNative("chatcmpl-x", "m", 1, { content: "hi" }, "stop");
   assert(synthetic?.id === "chatcmpl-x" && synthetic?.created === 1, "sse synthetic chunk mismatch");
   console.log("sse_ok");
+
+  // Compression core helpers (W17+, opt-in)
+  assert(compressionIsTextBlockNative({ type: "text", text: "hi" }) === true, "compression text block mismatch");
+  assert(compressionIsTextBlockNative({ type: "image_url" }) === false, "compression non-text block mismatch");
+  assert(
+    compressionExtractTextContentNative([
+      { type: "text", text: "a" },
+      { type: "image_url", image_url: { url: "x" } },
+      { type: "text", text: "b" },
+    ]) === "a\nb",
+    "compression extract content mismatch"
+  );
+  const replaced = compressionReplaceTextContentNative(
+    { role: "user", content: [{ type: "text", text: "old" }, { type: "image_url", image_url: { url: "x" } }] },
+    "new"
+  );
+  assert(replaced?.content?.[0]?.text === "new" && replaced?.content?.[1]?.type === "image_url", "compression replace mismatch");
+  assert(compressionDetectLanguageNative("这是中文内容") === "zh", "compression detect language mismatch");
+  const langs = compressionListSupportedLanguagesNative();
+  assert(Array.isArray(langs) && langs.includes("en") && langs.includes("zh") && langs.includes("ja"), "compression languages mismatch");
+  assert(compressionScoreTokenNative("https://x") === 1.0, "compression score token mismatch");
+  const pruned = compressionPruneByScoreNative("This is a very simple test for compression", 1.0, 0.3);
+  assert(pruned === "This is a very simple test for compression", "compression prune mismatch");
+  console.log("compression_core_ok");
 
   console.log("CNV1_RUST_BRIDGE_SMOKE_OK");
 }

@@ -57,6 +57,14 @@ type NativeBinding = {
     prefixData(output: string, line: string): string;
     remember(line: string): void;
   };
+  // Compression core helpers (W17+, opt-in)
+  compressionIsTextBlock?(valueJson: string): boolean;
+  compressionExtractTextContent?(contentJson: string | null | undefined): string;
+  compressionReplaceTextContent?(msgJson: string, newText: string): string;
+  compressionDetectLanguage?(text: string): string;
+  compressionListSupportedLanguages?(): string[];
+  compressionScoreToken?(token: string): number;
+  compressionPruneByScore?(text: string, keepRate: number, minScore: number): string;
 };
 
 let cachedBinding: NativeBinding | null | undefined;
@@ -291,6 +299,51 @@ export function buildSyntheticChatChunkNative(
   if (typeof fn !== "function") throw new Error("native sseBuildSyntheticChatChunk not available (rebuild addon)");
   const finish = finishReason === undefined || finishReason === null ? null : JSON.stringify(finishReason);
   return JSON.parse(fn(id, model, created, JSON.stringify(delta), finish)) as unknown;
+}
+
+// ---------- Compression core helpers (W17+, opt-in) ----------
+
+export function compressionIsTextBlockNative(value: unknown): boolean {
+  const fn = binding().compressionIsTextBlock;
+  if (typeof fn !== "function") throw new Error("native compressionIsTextBlock not available (rebuild addon)");
+  return fn(JSON.stringify(value));
+}
+
+export function compressionExtractTextContentNative(content: unknown | null | undefined): string {
+  const fn = binding().compressionExtractTextContent;
+  if (typeof fn !== "function") throw new Error("native compressionExtractTextContent not available (rebuild addon)");
+  const payload = content === undefined || content === null ? null : JSON.stringify(content);
+  return fn(payload);
+}
+
+export function compressionReplaceTextContentNative(msg: unknown, newText: string): unknown {
+  const fn = binding().compressionReplaceTextContent;
+  if (typeof fn !== "function") throw new Error("native compressionReplaceTextContent not available (rebuild addon)");
+  return JSON.parse(fn(JSON.stringify(msg), newText)) as unknown;
+}
+
+export function compressionDetectLanguageNative(text: string): string {
+  const fn = binding().compressionDetectLanguage;
+  if (typeof fn !== "function") throw new Error("native compressionDetectLanguage not available (rebuild addon)");
+  return fn(text);
+}
+
+export function compressionListSupportedLanguagesNative(): string[] {
+  const fn = binding().compressionListSupportedLanguages;
+  if (typeof fn !== "function") throw new Error("native compressionListSupportedLanguages not available (rebuild addon)");
+  return fn();
+}
+
+export function compressionScoreTokenNative(token: string): number {
+  const fn = binding().compressionScoreToken;
+  if (typeof fn !== "function") throw new Error("native compressionScoreToken not available (rebuild addon)");
+  return fn(token);
+}
+
+export function compressionPruneByScoreNative(text: string, keepRate: number, minScore: number): string {
+  const fn = binding().compressionPruneByScore;
+  if (typeof fn !== "function") throw new Error("native compressionPruneByScore not available (rebuild addon)");
+  return fn(text, keepRate, minScore);
 }
 
 /** Low-level access for advanced/experimental use. */
