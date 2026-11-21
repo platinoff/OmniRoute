@@ -6,6 +6,7 @@
 //! Wave 19+: output-mode primitives and lite text helpers.
 //! Wave 21+: lite body-level transforms.
 //! Wave 23+: lightweight compression stats/token-estimation helpers.
+//! Wave 25+: pure reasoning-field helpers.
 
 pub mod caveman_rules;
 pub mod exclusions;
@@ -15,6 +16,7 @@ pub mod lite_text;
 pub mod message_content;
 pub mod output_mode;
 pub mod preservation;
+pub mod reasoning_fields;
 pub mod stats;
 pub mod ultra_heuristic;
 pub mod validation;
@@ -49,6 +51,9 @@ pub use output_mode::{
     CAVEMAN_OUTPUT_MARKER, SHARED_BOUNDARIES,
 };
 pub use preservation::{extract_fenced_code_blocks, find_fenced_code_blocks};
+pub use reasoning_fields::{
+    ensure_reasoning_content_on_tool_calls, has_non_empty_reasoning_content,
+};
 pub use stats::{
     compression_ratio, compression_savings, estimate_token_savings, estimate_tokens,
     CompressionSavings,
