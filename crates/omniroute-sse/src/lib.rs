@@ -145,6 +145,196 @@ pub fn format_sse(data: Option<&Value>, source_format: Option<&str>) -> String {
     format!("data: {}\n\n", cleaned)
 }
 
+fn is_sse_control_or_comment_line(trimmed: &str) -> bool {
+    let lower = trimmed.to_ascii_lowercase();
+    lower.starts_with("event:")
+        || lower.starts_with("id:")
+        || lower.starts_with("retry:")
+        || lower.starts_with(':')
+}
+
+fn has_self_describing_pending_data_payload(pending_event_lines: &[String]) -> bool {
+    let data_lines: Vec<String> = pending_event_lines
+        .iter()
+        .filter_map(|line| extract_sse_data_line(line))
+        .collect();
+    if data_lines.is_empty() {
+        return false;
+    }
+    let Some(parsed) = parse_sse_data_lines(&data_lines, None) else {
+        return false;
+    };
+    let Value::Object(map) = parsed else {
+        return false;
+    };
+    map.get("done") == Some(&Value::Bool(true))
+        || matches!(map.get("type"), Some(Value::String(_)))
+        || matches!(map.get("object"), Some(Value::String(_)))
+        || matches!(map.get("choices"), Some(Value::Array(_)))
+        || matches!(map.get("candidates"), Some(Value::Array(_)))
+        || matches!(map.get("response"), Some(Value::Object(_)))
+}
+
+/// Stateful SSE data-line normalizer (bounded port of `createSSEDataLineNormalizer`).
+#[derive(Debug, Default, Clone)]
+pub struct SseDataLineNormalizer {
+    pending_event_lines: Vec<String>,
+}
+
+impl SseDataLineNormalizer {
+    pub fn new() -> Self {
+        Self {
+            pending_event_lines: Vec::new(),
+        }
+    }
+
+    pub fn has_pending(&self) -> bool {
+        !self.pending_event_lines.is_empty()
+    }
+
+    fn flush(&mut self, output: &mut Vec<String>) {
+        if self.pending_event_lines.is_empty() {
+            return;
+        }
+
+        let event_lines: Vec<String> = self
+            .pending_event_lines
+            .iter()
+            .filter(|line| !line.trim().is_empty())
+            .cloned()
+            .collect();
+        let mut data_lines: Vec<String> = Vec::new();
+        let mut passthrough_lines: Vec<String> = Vec::new();
+
+        for line in &event_lines {
+            if let Some(data_line) = extract_sse_data_line(line) {
+                data_lines.push(data_line);
+            } else {
+                passthrough_lines.push(line.clone());
+            }
+        }
+
+        output.extend(passthrough_lines);
+        if !data_lines.is_empty() {
+            let parsed = parse_sse_data_lines(&data_lines, None);
+            if let Some(parsed_value) = parsed {
+                if parsed_value.get("done") == Some(&Value::Bool(true)) {
+                    output.push("data: [DONE]".to_string());
+                } else {
+                    output.push(format!("data: {}", parsed_value));
+                }
+            } else {
+                output.extend(
+                    event_lines
+                        .iter()
+                        .filter(|line| extract_sse_data_line(line).is_some())
+                        .cloned(),
+                );
+            }
+        } else {
+            output.extend(
+                event_lines
+                    .iter()
+                    .filter(|line| extract_sse_data_line(line).is_some())
+                    .cloned(),
+            );
+        }
+
+        output.push(String::new());
+        self.pending_event_lines.clear();
+    }
+
+    /// Normalize incoming SSE lines, buffering partial events and emitting normalized events.
+    pub fn normalize(&mut self, lines: &[String]) -> Vec<String> {
+        let mut output: Vec<String> = Vec::new();
+        for line in lines {
+            let normalized_line = line.replace('\r', "");
+            let trimmed = normalized_line.trim().to_string();
+
+            if !trimmed.is_empty()
+                && is_sse_control_or_comment_line(&trimmed)
+                && has_self_describing_pending_data_payload(&self.pending_event_lines)
+            {
+                self.flush(&mut output);
+            }
+
+            self.pending_event_lines.push(normalized_line);
+            if trimmed.is_empty() {
+                self.flush(&mut output);
+            }
+        }
+        output
+    }
+}
+
+/// Stateful SSE event-prefix buffer (bounded port of `createSSEEventPrefixBuffer`).
+#[derive(Debug, Default, Clone)]
+pub struct SseEventPrefixBuffer {
+    lines: Vec<String>,
+    emitted: bool,
+}
+
+impl SseEventPrefixBuffer {
+    pub fn new() -> Self {
+        Self {
+            lines: Vec::new(),
+            emitted: false,
+        }
+    }
+
+    pub fn clear(&mut self) {
+        self.lines.clear();
+        self.emitted = false;
+    }
+
+    fn has_unemitted(&self) -> bool {
+        !self.lines.is_empty() && !self.emitted
+    }
+
+    fn prefix(&mut self, output: &str) -> String {
+        if !self.has_unemitted() {
+            return output.to_string();
+        }
+        self.emitted = true;
+        format!("{}\n{}", self.lines.join("\n"), output)
+    }
+
+    /// Last remembered `event:` type, if any.
+    pub fn event_type(&self) -> String {
+        for line in self.lines.iter().rev() {
+            let trimmed = line.trim();
+            let lower = trimmed.to_ascii_lowercase();
+            if lower.starts_with("event:") {
+                return trimmed[6..].trim().to_string();
+            }
+        }
+        String::new()
+    }
+
+    /// Flush buffered prefix as a block terminator when unemitted.
+    pub fn flush(&mut self) -> String {
+        if self.has_unemitted() {
+            self.prefix("\n")
+        } else {
+            String::new()
+        }
+    }
+
+    /// Prefix output with buffered event lines when `line` is a `data:` line.
+    pub fn prefix_data(&mut self, output: &str, line: &str) -> String {
+        if line.starts_with("data:") {
+            self.prefix(output)
+        } else {
+            output.to_string()
+        }
+    }
+
+    pub fn remember(&mut self, line: &str) {
+        self.lines.push(line.to_string());
+        self.emitted = false;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -233,5 +423,75 @@ mod tests {
         let v = json!({"usage":{"prompt_tokens":1,"perf_metrics":null}});
         let out = format_sse(Some(&v), None);
         assert_eq!(out, "data: {\"usage\":{\"prompt_tokens\":1}}\n\n");
+    }
+
+    #[test]
+    fn normalizes_multiline_data_events() {
+        let mut n = SseDataLineNormalizer::new();
+        let lines = vec![
+            "event: message".to_string(),
+            "data: {\"a\":".to_string(),
+            "data: 1}".to_string(),
+            "".to_string(),
+        ];
+        let out = n.normalize(&lines);
+        assert_eq!(
+            out,
+            vec![
+                "event: message".to_string(),
+                "data: {\"a\":1}".to_string(),
+                "".to_string(),
+            ]
+        );
+        assert!(!n.has_pending());
+    }
+
+    #[test]
+    fn normalizer_flushes_on_done_and_control_boundary() {
+        let mut n = SseDataLineNormalizer::new();
+        let out = n.normalize(&[
+            "data: [DONE]".to_string(),
+            "".to_string(),
+            "data: {\"type\":\"response.output_text.delta\"}".to_string(),
+            "event: next".to_string(),
+        ]);
+        assert_eq!(
+            out,
+            vec![
+                "data: [DONE]".to_string(),
+                "".to_string(),
+                "data: {\"type\":\"response.output_text.delta\"}".to_string(),
+                "".to_string(),
+            ]
+        );
+        assert!(n.has_pending());
+
+        let out2 = n.normalize(&["data: {}".to_string(), "".to_string()]);
+        assert_eq!(
+            out2,
+            vec![
+                "event: next".to_string(),
+                "data: {}".to_string(),
+                "".to_string()
+            ]
+        );
+    }
+
+    #[test]
+    fn event_prefix_buffer_behaviour() {
+        let mut b = SseEventPrefixBuffer::new();
+        b.remember("event: response.delta");
+        b.remember("id: 1");
+        assert_eq!(b.event_type(), "response.delta");
+        let prefixed = b.prefix_data("data: {\"x\":1}\n\n", "data: {\"x\":1}\n\n");
+        assert_eq!(
+            prefixed,
+            "event: response.delta\nid: 1\ndata: {\"x\":1}\n\n"
+        );
+        // second prefix should not re-emit
+        let again = b.prefix_data("data: {\"y\":2}\n\n", "data: {\"y\":2}\n\n");
+        assert_eq!(again, "data: {\"y\":2}\n\n");
+        b.clear();
+        assert_eq!(b.flush(), "");
     }
 }
