@@ -1,0 +1,4 @@
+[toolchain]
+# Node-primary repository; the Rust wasm crate is opt-in and host-agnostic.
+channel = "stable"
+components = ["rustfmt", "clippy"]
